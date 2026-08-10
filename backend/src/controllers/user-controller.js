@@ -67,3 +67,30 @@ export const deleteUser = asyncHandler(async (req, res) => {
   const data = await userService.softDeleteUser(req.params.id);
   return sendSuccess(res, { message: 'User deactivated', data });
 });
+
+
+/**
+ * PATCH /api/v1/users/:id/profile-image
+ * User can update their own profile image OR Admin can update any user's image.
+ */
+export const updateProfileImage = asyncHandler(async (req, res) => {
+  const { id } = req.params;
+
+  // Authorization Check: Non-Admin can only update their own profile
+  if (req.user.role !== 'ADMIN' && req.user._id.toString() !== id) {
+    throw ApiError.forbidden('You can only update your own profile image');
+  }
+
+  // File Validation Check
+  if (!req.file) {
+    throw ApiError.badRequest('Please upload an image file');
+  }
+
+  // Call Service Layer
+  const data = await userService.updateUserProfileImage(id, req.file.buffer);
+
+  return sendSuccess(res, {
+    message: 'Profile image updated successfully',
+    data,
+  });
+});

@@ -1,5 +1,6 @@
 import User from '../models/user-model.js';
 import ApiError from '../utils/api-error.js';
+import { uploadToCloudinary, deleteFromCloudinary } from '../config/cloudinary.js';
 
 /**
  * Admin-creates a user with any role.
@@ -98,4 +99,32 @@ export const softDeleteUser = async (id) => {
   const user = await User.findByIdAndUpdate(id, { isActive: false }, { new: true });
   if (!user) throw ApiError.notFound('User not found');
   return { _id: user._id.toString() };
+};
+
+
+/**
+ * Upload & Update Profile Image
+ */
+export const updateUserProfileImage = async (userId, fileBuffer) => {
+  const user = await User.findById(userId);
+  if (!user) {
+    throw ApiError.notFound('User not found');
+  }
+
+  // Step 1: Purani image ko Cloudinary se safe delete karna
+  if (user.profileImage && user.profileImage.publicId) {
+    await deleteFromCloudinary(user.profileImage.publicId);
+  }
+
+  // Step 2: Nayi image Cloudinary par upload karna
+  const uploadResult = await uploadToCloudinary(fileBuffer, 'saylani-lms/profiles');
+
+  // Step 3: DB record update karna
+  user.profileImage = {
+    url: uploadResult.url,
+    publicId: uploadResult.publicId,
+  };
+
+  await user.save();
+  return user;
 };

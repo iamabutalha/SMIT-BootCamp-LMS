@@ -1,3 +1,7 @@
+
+import { AppRouter } from './app/router';
+
+=======
 function App() {
   return (
     <main className="app">
@@ -9,3 +13,4 @@ function App() {
 }
 
 export default App
+
