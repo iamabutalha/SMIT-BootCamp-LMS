@@ -1,0 +1,42 @@
+/* Theme Utility Classes for Saylani Bootcamp LMS (Lovable Design System) */
+
+.surface-card {
+  background-color: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-xl);
+  box-shadow: 0 1px 3px 0 rgba(0, 107, 60, 0.05);
+}
+
+.theme-input {
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  padding: 0.625rem 0.875rem;
+  background-color: var(--color-surface);
+  color: var(--color-text-main);
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.theme-input:focus {
+  outline: none;
+  border-color: var(--color-brand);
+  box-shadow: 0 0 0 3px rgba(0, 143, 76, 0.15);
+}
+
+/* Sidebar Active Nav Item Indicator */
+.sidebar-item-active {
+  background-color: var(--color-sidebar-accent);
+  color: #ffffff;
+  position: relative;
+}
+
+.sidebar-item-active::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 0.375rem;
+  bottom: 0.375rem;
+  width: 4px;
+  background-color: var(--color-lime);
+  border-top-right-radius: 4px;
+  border-bottom-right-radius: 4px;
+}
