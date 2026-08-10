@@ -1,4 +1,4 @@
-// import mongoose from 'mongoose';
+import mongoose from 'mongoose';
 
 // /**
 //  * Connects to MongoDB using Mongoose.
@@ -15,9 +15,9 @@
 //   // Fail fast instead of buffering queries for 30s when the DB is unreachable.
 //   mongoose.set('strictQuery', true);
 
-//   const conn = await mongoose.connect(uri);
-//   console.log(`MongoDB connected: ${conn.connection.host}`);
-//   return conn;
-// };
+  const conn = await mongoose.connect(uri);
+  console.log(`MongoDB connected: ${conn.connection.host}`);
+  return conn;
+};
 
 // export default connectDB;

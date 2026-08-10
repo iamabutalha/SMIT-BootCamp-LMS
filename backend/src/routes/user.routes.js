@@ -6,7 +6,12 @@ import {
   updateUser,
   updateUserRole,
   deleteUser,
+<<<<<<< HEAD:backend/src/routes/user-routes.js
+  updateProfileImage,
+} from '../controllers/user-controller.js';
+=======
 } from '../controllers/user.controller.js';
+>>>>>>> 90656a2e4e064b4805441ed7454558bd350cc10f:backend/src/routes/user.routes.js
 import verifyToken from '../middlewares/verify-token.js';
 import authorizeRoles from '../middlewares/authorize-roles.js';
 import validateRequest from '../middlewares/validate-request.js';
@@ -27,37 +32,17 @@ router.use(verifyToken);
 
 router.post('/', authorizeRoles('ADMIN'), createUserValidator, validateRequest, createUser);
 router.get('/', authorizeRoles('ADMIN'), listUsersValidator, validateRequest, listUsers);
-
-// Readable by ADMIN or the user themselves (ownership checked in the controller).
-router.get('/:id', idParamValidator, validateRequest, getUser);
-
-router.patch('/:id', authorizeRoles('ADMIN'), updateUserValidator, validateRequest, updateUser);
-router.patch(
-  '/:id/role',
-  authorizeRoles('ADMIN'),
-  updateRoleValidator,
-  validateRequest,
-  updateUserRole
-);
-router.delete('/:id', authorizeRoles('ADMIN'), idParamValidator, validateRequest, deleteUser);
-
-
-
-// --- Existing Routes ---
-router.post('/', authorizeRoles('ADMIN'), createUserValidator, validateRequest, createUser);
-router.get('/', authorizeRoles('ADMIN'), listUsersValidator, validateRequest, listUsers);
 router.get('/:id', idParamValidator, validateRequest, getUser);
 router.patch('/:id', authorizeRoles('ADMIN'), updateUserValidator, validateRequest, updateUser);
 router.patch('/:id/role', authorizeRoles('ADMIN'), updateRoleValidator, validateRequest, updateUserRole);
 router.delete('/:id', authorizeRoles('ADMIN'), idParamValidator, validateRequest, deleteUser);
 
-// --- NEW ROUTE: Profile Image Upload ---
-// Ownership or Admin check inside controller/service
+// Profile image upload — ownership or admin check inside controller
 router.patch(
   '/:id/profile-image',
   idParamValidator,
   validateRequest,
-  upload.single('profileImage'), // Form-data field name
+  upload.single('profileImage'),
   updateProfileImage
 );
 
