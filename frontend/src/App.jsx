@@ -1,16 +1,16 @@
 
 import { AppRouter } from './app/router';
+import { RouteLoader } from './components/common';
 
-=======
-function App() {
+export function App() {
   return (
-    <main className="app">
-      <h1>SMIT LMS</h1>
-      <p>Learning Management System</p>
-      <span>Frontend is under development</span>
-    </main>
-  )
+    <>
+      <RouteLoader />
+      <AppRouter />
+    </>
+  );
 }
 
-export default App
+export default App;
+
 

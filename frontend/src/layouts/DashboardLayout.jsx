@@ -3,15 +3,11 @@ import Topbar from './Topbar';
 import Sidebar from './Sidebar';
 import MobileSidebar from './MobileSidebar';
 import Breadcrumbs from './Breadcrumbs';
-import { RouteLoader } from '../components/common/RouteLoader';
 import { RouteTransition } from '../components/common/RouteTransition';
 
 export function DashboardLayout() {
   return (
-    <div className="min-h-screen bg-slate-50 flex flex-col font-sans">
-      {/* Global Route Progress Indicator & Backdrop */}
-      <RouteLoader />
-
+    <div className="min-h-screen bg-background flex flex-col font-sans">
       <Topbar />
       <div className="flex flex-1">
         <Sidebar />

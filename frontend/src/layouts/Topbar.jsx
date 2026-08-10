@@ -62,7 +62,7 @@ export function Topbar() {
                 {user.email}
               </span>
             </div>
-            <Avatar name={user.name} />
+            <Avatar src={user.profileImage?.url} name={user.name} />
           </div>
         )}
 

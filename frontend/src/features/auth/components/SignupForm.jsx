@@ -6,7 +6,7 @@ import { useDispatch } from 'react-redux';
 import { toast } from 'sonner';
 import { User, Mail, Lock, Phone, UserPlus } from 'lucide-react';
 
-import { useRegisterMutation } from '../api/authApi';
+import { useRegisterMutation, useUpdateProfileImageMutation } from '../api/authApi';
 import { setCredentials } from '../authSlice';
 import { ProfileImageUpload } from './ProfileImageUpload';
 import { Input } from '@/components/ui/Input';
@@ -30,7 +30,10 @@ const signupSchema = z
 export function SignupForm() {
   const dispatch = useDispatch();
   const navigate = useNavigate();
-  const [registerUser, { isLoading }] = useRegisterMutation();
+  const [registerUser, { isLoading: isRegistering }] = useRegisterMutation();
+  const [updateProfileImage, { isLoading: isUploadingImage }] = useUpdateProfileImageMutation();
+
+  const isSubmitting = isRegistering || isUploadingImage;
 
   const {
     register,
@@ -51,8 +54,6 @@ export function SignupForm() {
 
   const onSubmit = async (values) => {
     try {
-      // API contract: POST /auth/register expects plain JSON — no file uploads.
-      // Profile image can be updated later via PATCH /users/:id/profile-image.
       const bodyData = {
         name: values.name,
         email: values.email,
@@ -67,7 +68,30 @@ export function SignupForm() {
         throw new Error(response.message || 'Registration completed without session payload');
       }
 
-      dispatch(setCredentials({ token, user }));
+      let updatedUser = user;
+
+      // Upload profile image if user attached a file during signup
+      if (values.profileImage && values.profileImage instanceof File) {
+        try {
+          const formData = new FormData();
+          formData.append('profileImage', values.profileImage);
+
+          const uploadRes = await updateProfileImage({
+            id: user._id,
+            formData,
+          }).unwrap();
+
+          if (uploadRes?.data) {
+            updatedUser = uploadRes.data;
+          }
+        } catch (uploadErr) {
+          toast.error(
+            uploadErr?.data?.message || 'Account created, but profile image upload failed.'
+          );
+        }
+      }
+
+      dispatch(setCredentials({ token, user: updatedUser }));
       toast.success(response.message || 'Account created successfully!');
 
       navigate(ROUTES.STUDENT.ROOT, { replace: true });
@@ -93,7 +117,7 @@ export function SignupForm() {
             value={field.value}
             onChange={field.onChange}
             error={errors.profileImage?.message}
-            isDisabled={isLoading}
+            isDisabled={isSubmitting}
           />
         )}
       />
@@ -104,6 +128,7 @@ export function SignupForm() {
         placeholder="Ali Jan"
         leftIcon={<User className="w-4 h-4 text-slate-400" />}
         error={errors.name?.message}
+        disabled={isSubmitting}
         {...register('name')}
       />
 
@@ -114,6 +139,7 @@ export function SignupForm() {
         placeholder="student@saylani.org"
         leftIcon={<Mail className="w-4 h-4 text-slate-400" />}
         error={errors.email?.message}
+        disabled={isSubmitting}
         {...register('email')}
       />
 
@@ -124,6 +150,7 @@ export function SignupForm() {
         placeholder="+92 300 1234567"
         leftIcon={<Phone className="w-4 h-4 text-slate-400" />}
         error={errors.phone?.message}
+        disabled={isSubmitting}
         {...register('phone')}
       />
 
@@ -135,6 +162,7 @@ export function SignupForm() {
           placeholder="••••••••"
           leftIcon={<Lock className="w-4 h-4 text-slate-400" />}
           error={errors.password?.message}
+          disabled={isSubmitting}
           {...register('password')}
         />
 
@@ -144,6 +172,7 @@ export function SignupForm() {
           placeholder="••••••••"
           leftIcon={<Lock className="w-4 h-4 text-slate-400" />}
           error={errors.confirmPassword?.message}
+          disabled={isSubmitting}
           {...register('confirmPassword')}
         />
       </div>
@@ -152,7 +181,7 @@ export function SignupForm() {
       <Button
         type="submit"
         fullWidth
-        isLoading={isLoading}
+        isLoading={isSubmitting}
         icon={<UserPlus className="w-4 h-4" />}
         className="w-full bg-[#006B3C] hover:bg-[#005530] text-white py-3 h-12 text-base font-bold rounded-xl shadow-md transition-all mt-2"
       >
