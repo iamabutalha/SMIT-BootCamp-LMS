@@ -1,7 +1,7 @@
 import asyncHandler from './async-handler.js';
 import ApiError from '../utils/api-error.js';
 import { verifyJwt } from '../utils/generate-token.js';
-import User from '../models/user-model.js';
+import User from '../models/user.model.js';
 
 /**
  * Authentication middleware.

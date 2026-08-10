@@ -1,5 +1,5 @@
 import { body, param, query } from 'express-validator';
-import { ROLES } from '../models/user-model.js';
+import { ROLES } from '../models/user.model.js';
 
 export const createUserValidator = [
   body('name').trim().notEmpty().withMessage('Name is required'),

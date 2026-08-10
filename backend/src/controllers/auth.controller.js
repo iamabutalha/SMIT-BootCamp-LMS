@@ -1,6 +1,6 @@
 import asyncHandler from '../middlewares/async-handler.js';
 import { sendSuccess } from '../utils/api-response.js';
-import * as authService from '../services/auth-service.js';
+import * as authService from '../services/auth.service.js';
 
 /**
  * POST /api/v1/auth/register — Public
