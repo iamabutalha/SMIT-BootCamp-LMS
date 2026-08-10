@@ -6,12 +6,7 @@ import {
   updateUser,
   updateUserRole,
   deleteUser,
-<<<<<<< HEAD:backend/src/routes/user-routes.js
-  updateProfileImage,
-} from '../controllers/user-controller.js';
-=======
 } from '../controllers/user.controller.js';
->>>>>>> 90656a2e4e064b4805441ed7454558bd350cc10f:backend/src/routes/user.routes.js
 import verifyToken from '../middlewares/verify-token.js';
 import authorizeRoles from '../middlewares/authorize-roles.js';
 import validateRequest from '../middlewares/validate-request.js';
