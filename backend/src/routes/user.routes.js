@@ -6,7 +6,7 @@ import {
   updateUser,
   updateUserRole,
   deleteUser,
-} from '../controllers/user-controller.js';
+} from '../controllers/user.controller.js';
 import verifyToken from '../middlewares/verify-token.js';
 import authorizeRoles from '../middlewares/authorize-roles.js';
 import validateRequest from '../middlewares/validate-request.js';
@@ -18,6 +18,7 @@ import {
   listUsersValidator,
 } from '../validators/user-validator.js';
 import upload from '../middlewares/multer.js';
+import { updateProfileImage } from '../controllers/user.controller.js';
 
 const router = Router();
 

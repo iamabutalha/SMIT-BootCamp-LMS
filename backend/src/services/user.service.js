@@ -1,4 +1,4 @@
-import User from '../models/user-model.js';
+import User from '../models/user.model.js';
 import ApiError from '../utils/api-error.js';
 import { uploadToCloudinary, deleteFromCloudinary } from '../config/cloudinary.js';
 
