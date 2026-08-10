@@ -1,7 +1,7 @@
 import asyncHandler from '../middlewares/async-handler.js';
 import ApiError from '../utils/api-error.js';
 import { sendSuccess, buildPaginated } from '../utils/api-response.js';
-import * as userService from '../services/user-service.js';
+import * as userService from '../services/user.service.js';
 
 /**
  * POST /api/v1/users — ADMIN
