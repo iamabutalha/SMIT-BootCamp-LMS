@@ -3,6 +3,7 @@
  */
 export const ROUTES = Object.freeze({
   ROOT: '/',
+  DASHBOARD: '/dashboard',
   LOGIN: '/login',
   REGISTER: '/register',
   UNAUTHORIZED: '/unauthorized',
@@ -29,8 +30,10 @@ export const ROUTES = Object.freeze({
     ROOT: '/admin',
     DASHBOARD: '/admin',
     USERS: '/admin/users',
+    STUDENTS: '/admin/students',
     COHORTS: '/admin/cohorts',
     ATTENDANCE: '/admin/attendance',
     TASKS: '/admin/tasks',
+    PROFILE: '/admin/profile',
   }),
 });

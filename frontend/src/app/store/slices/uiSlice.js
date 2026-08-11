@@ -3,6 +3,7 @@ import { createSlice } from '@reduxjs/toolkit';
 const initialState = {
   sidebarOpen: true,
   mobileSidebarOpen: false,
+  logoutModalOpen: false,
 };
 
 export const uiSlice = createSlice({
@@ -24,6 +25,12 @@ export const uiSlice = createSlice({
     closeMobileSidebar: (state) => {
       state.mobileSidebarOpen = false;
     },
+    openLogoutModal: (state) => {
+      state.logoutModalOpen = true;
+    },
+    closeLogoutModal: (state) => {
+      state.logoutModalOpen = false;
+    },
   },
 });
 
@@ -33,6 +40,8 @@ export const {
   toggleMobileSidebar,
   setMobileSidebarOpen,
   closeMobileSidebar,
+  openLogoutModal,
+  closeLogoutModal,
 } = uiSlice.actions;
 
 export default uiSlice.reducer;

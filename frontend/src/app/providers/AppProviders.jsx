@@ -4,6 +4,8 @@ import { BrowserRouter } from 'react-router-dom';
 import { Toaster } from 'sonner';
 import { store } from '../store';
 import { logout } from '../store/slices/authSlice';
+import { baseApi } from '../../services/api/baseApi';
+import AuthInitializer from './AuthInitializer';
 
 function GlobalEventListener({ children }) {
   const dispatch = useDispatch();
@@ -11,6 +13,7 @@ function GlobalEventListener({ children }) {
   useEffect(() => {
     const handleUnauthorized = () => {
       dispatch(logout());
+      dispatch(baseApi.util.resetApiState());
     };
 
     window.addEventListener('smit:unauthorized', handleUnauthorized);
@@ -27,8 +30,10 @@ export function AppProviders({ children }) {
     <Provider store={store}>
       <GlobalEventListener>
         <BrowserRouter>
-          {children}
-          <Toaster position="top-right" richColors closeButton />
+          <AuthInitializer>
+            {children}
+            <Toaster position="top-right" richColors closeButton />
+          </AuthInitializer>
         </BrowserRouter>
       </GlobalEventListener>
     </Provider>

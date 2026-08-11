@@ -11,6 +11,7 @@ export const ENDPOINTS = Object.freeze({
   USERS: {
     BASE: '/users',
     BY_ID: (id) => `/users/${id}`,
+    UPDATE: (id) => `/users/${id}`,
     CHANGE_ROLE: (id) => `/users/${id}/role`,
     PROFILE_IMAGE: (id) => `/users/${id}/profile-image`,
   },

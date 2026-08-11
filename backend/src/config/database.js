@@ -7,15 +7,15 @@ mongoose.set('bufferCommands', false);
 
 const connectDB = async () => {
   try {
-    if (!process.env.MONGO_URI) {
-      throw new Error('MONGO_URI environment variable is missing.');
+    if (!process.env.MONGODB_URI) {
+      throw new Error('MONGODB_URI environment variable is missing.');
     }
 
     if (mongoose.connection.readyState === 1) {
       return;
     }
 
-    const conn = await mongoose.connect(process.env.MONGO_URI, {
+    const conn = await mongoose.connect(process.env.MONGODB_URI, {
       serverSelectionTimeoutMS: 5000,
       maxPoolSize: 10,
       minPoolSize: 2,
