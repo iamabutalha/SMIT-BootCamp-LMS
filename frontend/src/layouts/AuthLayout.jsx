@@ -1,86 +1,94 @@
-import { Users, TrendingUp, ShieldCheck } from 'lucide-react';
+import { Users, CalendarCheck, BookOpen, ShieldCheck } from 'lucide-react';
+import Logo from '@/components/common/Logo';
 
 export function AuthLayout({
   children,
   title = 'Welcome back, Admin',
-  subtitle = 'Sign in to your BootcampLMS admin workspace.',
+  subtitle = 'Sign in to your SMIT Bootcamp LMS workspace.',
 }) {
   return (
-    <div className="min-h-screen w-full grid grid-cols-1 lg:grid-cols-2 bg-background font-sans">
-      {/* Left Brand Panel — Hidden on small screens, 50% width on Desktop */}
-      <div className="hidden lg:flex relative flex-col justify-between p-12 bg-[#005c33] text-white overflow-hidden select-none">
-        {/* Background Grid Pattern Overlay */}
-        <div className="absolute inset-0 bg-[linear-gradient(to_right,#ffffff0a_1px,transparent_1px),linear-gradient(to_bottom,#ffffff0a_1px,transparent_1px)] [background-size:28px_28px] pointer-events-none" />
+    <div className="min-h-screen w-full grid grid-cols-1 lg:grid-cols-12 bg-[#F8F9FB] font-sans">
+      {/* Left Brand Panel — 5 Columns on Desktop */}
+      <div className="hidden lg:flex lg:col-span-5 relative flex-col justify-between p-10 bg-slate-900 text-white overflow-hidden select-none">
+        {/* Glowing Gradient Background Effects */}
+        <div className="absolute top-0 -left-20 w-96 h-96 bg-[#0072BC]/30 rounded-full blur-3xl pointer-events-none" />
+        <div className="absolute bottom-0 -right-20 w-96 h-96 bg-[#8CC63F]/20 rounded-full blur-3xl pointer-events-none" />
+        <div className="absolute inset-0 bg-[linear-gradient(to_right,#ffffff08_1px,transparent_1px),linear-gradient(to_bottom,#ffffff08_1px,transparent_1px)] [background-size:24px_24px] pointer-events-none" />
 
-        {/* Top Brand Header */}
-        <div className="relative z-10 flex items-center gap-3">
-          <img src="/logo.png" alt="LMS Group" className="h-10 w-10 rounded-full object-cover bg-white shadow-md" />
-          <span className="truncate font-bold tracking-tight text-lg text-white">
-            Bootcamp<span className="text-lime">LMS</span>
-          </span>
+        {/* Top Brand Logo Container */}
+        <div className="relative z-10">
+          <div className="inline-block bg-white p-3 rounded-2xl shadow-xl">
+            <Logo size="md" />
+          </div>
         </div>
 
-        {/* Center Hero Heading & Subtitle */}
-        <div className="relative max-w-md my-auto space-y-6">
-          <h1 className="text-4xl leading-tight font-bold text-white tracking-tight">
-            Run your bootcamp with{' '}
-            <span className="block text-lime">clarity.</span>
+        {/* Center Hero Message & Stats */}
+        <div className="relative max-w-sm my-auto space-y-6 z-10">
+          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[#0072BC]/20 border border-[#0072BC]/30 text-xs font-semibold text-blue-300">
+            <ShieldCheck className="w-3.5 h-3.5 text-[#8CC63F]" />
+            <span>Official SMIT Learning Portal</span>
+          </div>
+
+          <h1 className="text-3xl font-extrabold text-white leading-tight tracking-tight">
+            Empowering youth through{' '}
+            <span className="text-transparent bg-clip-text bg-gradient-to-r from-[#0284C7] to-[#8CC63F]">
+              technology & education.
+            </span>
           </h1>
 
-          <p className="text-base text-[#E8F7DF]/80 font-normal leading-relaxed">
-            One workspace for students, attendance, teams, projects, tasks and reporting — built for mentors who care about outcomes.
+          <p className="text-xs text-slate-300 font-normal leading-relaxed">
+            Streamlined bootcamp management for students, courses, attendance, fees, and tasks in one unified platform.
           </p>
 
-          {/* 3 Glassmorphism Stat Cards */}
-          <div className="grid grid-cols-3 gap-4 pt-4">
-            <div className="p-4 rounded-2xl bg-white/10 ring-1 ring-white/15 space-y-1.5 shadow-lg">
-              <Users className="h-5 w-5 text-lime" />
-              <div className="text-2xl font-bold text-white">128</div>
-              <div className="text-xs text-[#E8F7DF]/80 font-medium">Students</div>
+          {/* Glassmorphism Stat Cards */}
+          <div className="grid grid-cols-3 gap-3 pt-2">
+            <div className="p-3 rounded-xl bg-white/5 border border-white/10 backdrop-blur-md space-y-1">
+              <Users className="h-4 w-4 text-[#0284C7]" />
+              <div className="text-lg font-bold text-white">128+</div>
+              <div className="text-[10px] text-slate-400 font-medium">Students</div>
             </div>
 
-            <div className="p-4 rounded-2xl bg-white/10 ring-1 ring-white/15 space-y-1.5 shadow-lg">
-              <TrendingUp className="h-5 w-5 text-lime" />
-              <div className="text-2xl font-bold text-white">94%</div>
-              <div className="text-xs text-[#E8F7DF]/80 font-medium">Attendance</div>
+            <div className="p-3 rounded-xl bg-white/5 border border-white/10 backdrop-blur-md space-y-1">
+              <CalendarCheck className="h-4 w-4 text-[#8CC63F]" />
+              <div className="text-lg font-bold text-white">86%</div>
+              <div className="text-[10px] text-slate-400 font-medium">Attendance</div>
             </div>
 
-            <div className="p-4 rounded-2xl bg-white/10 ring-1 ring-white/15 space-y-1.5 shadow-lg">
-              <ShieldCheck className="h-5 w-5 text-lime" />
-              <div className="text-2xl font-bold text-white">12</div>
-              <div className="text-xs text-[#E8F7DF]/80 font-medium">Active teams</div>
+            <div className="p-3 rounded-xl bg-white/5 border border-white/10 backdrop-blur-md space-y-1">
+              <BookOpen className="h-4 w-4 text-[#0284C7]" />
+              <div className="text-lg font-bold text-white">12</div>
+              <div className="text-[10px] text-slate-400 font-medium">Courses</div>
             </div>
           </div>
         </div>
 
-        {/* Footer Signature */}
-        <div className="relative z-10 text-xs text-[#E8F7DF]/60 font-normal">
-          © 2026 BootcampLMS. Professional. Modern. Reliable.
+        {/* Footer */}
+        <div className="relative z-10 text-[11px] text-slate-400 font-normal">
+          © 2026 Saylani Mass IT Training (SMIT). All rights reserved.
         </div>
       </div>
 
-      {/* Right Canvas Panel — Form Container */}
-      <div className="flex flex-col justify-center items-center p-6 sm:p-12 md:p-16 bg-card">
-        <div className="w-full max-w-md space-y-8">
-          {/* Mobile Logo Header */}
-          <div className="lg:hidden flex items-center justify-center gap-2.5 mb-2">
-            <img src="/logo.png" alt="LMS Group" className="h-10 w-10 rounded-full object-cover bg-white shadow-md" />
-            <span className="truncate font-bold tracking-tight text-lg text-foreground">
-              Bootcamp<span className="text-brand-dark">LMS</span>
-            </span>
+      {/* Right Form Canvas — 7 Columns on Desktop */}
+      <div className="lg:col-span-7 flex flex-col justify-center items-center p-6 sm:p-12 bg-[#F8F9FB]">
+        <div className="w-full max-w-md space-y-6 bg-white p-8 sm:p-10 rounded-2xl border border-slate-200/80 shadow-sm">
+          {/* Mobile Logo Display */}
+          <div className="lg:hidden flex items-center justify-center mb-4">
+            <div className="bg-slate-50 p-2.5 rounded-2xl border border-slate-100">
+              <Logo size="md" />
+            </div>
           </div>
 
-          {/* Form Header */}
-          <div className="text-left space-y-1.5">
-            <h2 className="text-3xl font-extrabold text-foreground tracking-tight">
+          {/* Title Header */}
+          <div className="text-left space-y-1">
+            <h2 className="text-2xl font-extrabold text-slate-900 tracking-tight">
               {title}
             </h2>
-            <p className="text-sm text-muted-foreground font-normal">
+            <p className="text-xs text-slate-500 font-normal">
               {subtitle}
             </p>
           </div>
 
-          {/* Render Form */}
+          {/* Form Children */}
           {children}
         </div>
       </div>

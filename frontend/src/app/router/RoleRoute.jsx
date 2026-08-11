@@ -7,10 +7,21 @@ import { ROUTES } from '../../constants/routes';
  * @param {{ allowedRoles: Array<string>, children?: React.ReactNode }} props
  */
 export function RoleRoute({ allowedRoles = [], children }) {
-  const { role } = useAuth();
+  const { role, isAuthenticated, isLoading } = useAuth();
 
-  if (!role || !allowedRoles.includes(role)) {
-    return <Navigate to={ROUTES.UNAUTHORIZED} replace />;
+  if (isLoading) {
+    return null;
+  }
+
+  const userRole = role ? String(role).toUpperCase() : null;
+  const allowedUpper = allowedRoles.map((r) => String(r).toUpperCase());
+
+  if (!isAuthenticated) {
+    return <Navigate to={ROUTES.LOGIN} replace />;
+  }
+
+  if (!userRole || !allowedUpper.includes(userRole)) {
+    return <Navigate to={ROUTES.ROOT} replace />;
   }
 
   return children ? children : <Outlet />;

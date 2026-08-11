@@ -120,6 +120,44 @@
   --sidebar-accent-foreground: oklch(1 0 0);
   --sidebar-border: oklch(1 0 0 / 12%);
   --sidebar-ring: oklch(0.7055 0.2133 138.68);
+
+  /* ── SMIT LMS Exact Theme Color Palette ── */
+  --dash-bg: #F8F9FB;
+  --dash-soft-green: #D5F7E5;
+  --dash-soft-blue: #F1F5FF;
+  --dash-soft-purple: #EFE7FF;
+  --dash-soft-yellow: #FEF8C2;
+  --dash-soft-red: #F8E5E2;
+  --dash-success: #21C75D;
+  --dash-purple: #9D6BE2;
+  --dash-text-secondary: #646D74;
+  --dash-text-primary: #0C0E0F;
+  --dash-light-blue: #F4F9FF;
+  --dash-light-gray: #F5F5F5;
+
+  /* Attendance Theme Colors */
+  --att-present: #57BA7F;
+  --att-leave: #DAA622;
+  --att-absent: #DE646D;
+  --att-primary-green: #21C65C;
+  --att-dark-green: #1EA14F;
+  --att-dark-blue: #364F80;
+  --att-bg: #F9FAFC;
+
+  /* Assignments Theme Colors */
+  --task-soft-blue: #DBEAFF;
+  --task-primary-blue: #2D67E4;
+  --task-warning: #C88B0D;
+  --task-soft-yellow: #FEF8C2;
+  --task-success: #38A65D;
+  --task-light-green: #68C48E;
+  --task-soft-red: #F8E5E2;
+  --task-danger: #CF3E44;
+  --task-bg: #F9FAFC;
+
+  /* SMIT Sidebar Active Pill */
+  --smit-sidebar-active-bg: #E8F7DF;
+  --smit-sidebar-active-text: #21C75D;
 }
 
 .dark {

@@ -46,6 +46,15 @@ export const authApi = baseApi.injectEndpoints({
       }),
       invalidatesTags: ['User'],
     }),
+
+    updateProfile: builder.mutation({
+      query: ({ id, data }) => ({
+        url: ENDPOINTS.USERS.UPDATE(id),
+        method: 'PATCH',
+        body: data,
+      }),
+      invalidatesTags: ['User'],
+    }),
   }),
 });
 
@@ -55,4 +64,5 @@ export const {
   useLogoutMutation,
   useGetCurrentUserQuery,
   useUpdateProfileImageMutation,
+  useUpdateProfileMutation,
 } = authApi;

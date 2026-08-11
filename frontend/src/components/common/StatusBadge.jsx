@@ -10,6 +10,7 @@ export function StatusBadge({ status, className }) {
     PRESENT: { variant: 'success', label: 'Present' },
     ABSENT: { variant: 'danger', label: 'Absent' },
     LATE: { variant: 'warning', label: 'Late' },
+    LEAVE: { variant: 'info', label: 'Leave' },
     EXCUSED: { variant: 'info', label: 'Excused' },
 
     // Submissions / Tasks
