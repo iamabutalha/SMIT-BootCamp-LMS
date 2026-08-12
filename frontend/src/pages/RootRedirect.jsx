@@ -9,9 +9,13 @@ export function RootRedirect({ section }) {
 
   if (!isAuthenticated) {
     const fullPath = location.pathname + location.search;
+    let targetLogin = ROUTES.STUDENT.LOGIN;
+    if (location.pathname.startsWith('/admin')) {
+      targetLogin = ROUTES.ADMIN.LOGIN;
+    }
     return (
       <Navigate
-        to={`${ROUTES.LOGIN}?redirect=${encodeURIComponent(fullPath)}`}
+        to={`${targetLogin}?redirect=${encodeURIComponent(fullPath)}`}
         state={{ from: location }}
         replace
       />
@@ -27,6 +31,9 @@ export function RootRedirect({ section }) {
       if (section === 'progress') return <Navigate to="/admin/progress" replace />;
       if (section === 'tasks' || section === 'assignments') return <Navigate to={ROUTES.ADMIN.TASKS} replace />;
       if (section === 'cohorts' || section === 'teams' || section === 'courses') return <Navigate to={ROUTES.ADMIN.COHORTS} replace />;
+      if (section === 'quizzes') return <Navigate to={ROUTES.ADMIN.QUIZZES} replace />;
+      if (section === 'teachers' || section === 'mentors') return <Navigate to={ROUTES.ADMIN.TEACHERS} replace />;
+      if (section === 'reports') return <Navigate to={ROUTES.ADMIN.REPORTS} replace />;
       if (section === 'profile') return <Navigate to={ROUTES.ADMIN.PROFILE} replace />;
     } else if (userRole === ROLES.MENTOR) {
       if (section === 'cohorts' || section === 'teams' || section === 'courses') return <Navigate to={ROUTES.MENTOR.COHORTS} replace />;
@@ -34,6 +41,7 @@ export function RootRedirect({ section }) {
       if (section === 'tasks' || section === 'assignments') return <Navigate to={ROUTES.MENTOR.TASKS} replace />;
     } else if (userRole === ROLES.STUDENT) {
       if (section === 'tasks' || section === 'assignments') return <Navigate to={ROUTES.STUDENT.TASKS} replace />;
+      if (section === 'quizzes') return <Navigate to={ROUTES.STUDENT.QUIZZES} replace />;
       if (section === 'attendance') return <Navigate to={ROUTES.STUDENT.ATTENDANCE} replace />;
       if (section === 'profile') return <Navigate to={ROUTES.STUDENT.PROFILE} replace />;
     }

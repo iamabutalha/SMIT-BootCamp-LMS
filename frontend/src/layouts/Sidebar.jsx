@@ -34,9 +34,9 @@ export function Sidebar() {
     { label: 'Attendance', to: ROUTES.ADMIN.ATTENDANCE, icon: CalendarCheck },
     { label: 'Payment', to: '/admin/payment', icon: CreditCard },
     { label: 'Assignment', to: ROUTES.ADMIN.TASKS, icon: ClipboardList },
-    { label: 'Quiz', to: '/admin/quiz', icon: HelpCircle },
+    { label: 'Quizzes', to: ROUTES.ADMIN.QUIZZES, icon: HelpCircle },
     { label: 'Students', to: ROUTES.ADMIN.STUDENTS, icon: Users },
-    { label: 'Teachers', to: '/admin/teachers', icon: UserCheck },
+    { label: 'Teachers', to: ROUTES.ADMIN.TEACHERS, icon: UserCheck },
     { label: 'Teams', to: ROUTES.ADMIN.COHORTS, icon: BookOpen },
     { label: 'Reports', to: '/admin/reports', icon: BarChart3 },
     { label: 'Settings', to: ROUTES.ADMIN.PROFILE, icon: Settings },
@@ -46,6 +46,7 @@ export function Sidebar() {
     navItems = [
       { label: 'Dashboard', to: ROUTES.STUDENT.ROOT, icon: LayoutDashboard },
       { label: 'My Tasks', to: ROUTES.STUDENT.TASKS, icon: ClipboardList },
+      { label: 'Quizzes', to: ROUTES.STUDENT.QUIZZES, icon: HelpCircle },
       { label: 'Attendance', to: ROUTES.STUDENT.ATTENDANCE, icon: CalendarCheck },
       { label: 'Profile', to: ROUTES.STUDENT.PROFILE, icon: Settings },
     ];

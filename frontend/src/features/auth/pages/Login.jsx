@@ -1,15 +1,6 @@
-import AuthLayout from '@/layouts/AuthLayout';
-import LoginForm from '../components/LoginForm';
+import AdminLogin from './AdminLogin';
 
-export function Login() {
-  return (
-    <AuthLayout
-      title="Welcome back, Admin"
-      subtitle="Sign in to your BootcampLMS admin workspace."
-    >
-      <LoginForm />
-    </AuthLayout>
-  );
-}
+export { AdminLogin } from './AdminLogin';
+export { StudentLogin } from './StudentLogin';
 
-export default Login;
+export default AdminLogin;

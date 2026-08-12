@@ -8,7 +8,7 @@ import * as authService from '../services/auth.service.js';
  */
 export const register = asyncHandler(async (req, res) => {
   const { name, email, password, phone } = req.body;
-  const data = await authService.registerStudent({ name, email, password, phone });
+  const data = await authService.registerStudent({ name, email, password, phone, file: req.file });
   return sendSuccess(res, { statusCode: 201, message: 'Registered', data });
 });
 
