@@ -15,6 +15,8 @@ import {
   selectAuthError,
 } from '../features/auth/authSelectors';
 
+import { ROLES } from '../constants/roles';
+
 /**
  * Custom hook to interact with authentication state and actions cleanly
  */
@@ -34,12 +36,20 @@ export function useAuth() {
   }, [dispatch]);
 
   const confirmLogout = useCallback(() => {
+    const currentRole = role ? String(role).toUpperCase() : null;
+    let targetLoginRoute = ROUTES.STUDENT.LOGIN;
+    if (currentRole === ROLES.ADMIN) {
+      targetLoginRoute = ROUTES.ADMIN.LOGIN;
+    } else if (currentRole === ROLES.STUDENT) {
+      targetLoginRoute = ROUTES.STUDENT.LOGIN;
+    }
+
     dispatch(closeLogoutModal());
     dispatch(logoutAction());
     dispatch(baseApi.util.resetApiState());
     toast.success('Signed out successfully.');
-    navigate(ROUTES.LOGIN, { replace: true });
-  }, [dispatch, navigate]);
+    navigate(targetLoginRoute, { replace: true });
+  }, [dispatch, navigate, role]);
 
   const cancelLogout = useCallback(() => {
     dispatch(closeLogoutModal());

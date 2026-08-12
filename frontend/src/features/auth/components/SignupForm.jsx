@@ -57,45 +57,27 @@ export function SignupForm() {
     if (isSubmitting) return;
 
     try {
-      const bodyData = {
-        name: values.name,
-        email: values.email,
-        password: values.password,
-        phone: values.phone || undefined,
-      };
+      const formData = new FormData();
+      formData.append('name', values.name);
+      formData.append('email', values.email);
+      formData.append('password', values.password);
+      if (values.phone) {
+        formData.append('phone', values.phone);
+      }
+      if (values.profileImage && values.profileImage instanceof File) {
+        formData.append('profileImage', values.profileImage);
+      }
 
-      const response = await registerUser(bodyData).unwrap();
+      const response = await registerUser(formData).unwrap();
       const { token, user } = response.data || {};
 
       if (!token || !user) {
         toast.success(response.message || 'Account created successfully! Please sign in.');
-        navigate(ROUTES.LOGIN, { replace: true });
+        navigate(ROUTES.STUDENT.LOGIN, { replace: true });
         return;
       }
 
-      let updatedUser = user;
-
-      if (values.profileImage && values.profileImage instanceof File) {
-        try {
-          const formData = new FormData();
-          formData.append('profileImage', values.profileImage);
-
-          const uploadRes = await updateProfileImage({
-            id: user._id,
-            formData,
-          }).unwrap();
-
-          if (uploadRes?.data) {
-            updatedUser = uploadRes.data;
-          }
-        } catch (uploadErr) {
-          toast.error(
-            uploadErr?.data?.message || 'Account created, but profile image upload failed.'
-          );
-        }
-      }
-
-      dispatch(setCredentials({ token, user: updatedUser }));
+      dispatch(setCredentials({ token, user }));
       toast.success(response.message || 'Account created successfully!');
 
       navigate(ROUTES.STUDENT.ROOT, { replace: true });
@@ -189,7 +171,7 @@ export function SignupForm() {
       {/* Footer Link */}
       <div className="text-center pt-2 text-xs text-slate-600">
         Already have an account?{' '}
-        <Link to={ROUTES.LOGIN} className="font-bold text-[#0072BC] hover:underline">
+        <Link to={ROUTES.STUDENT.LOGIN} className="font-bold text-[#0072BC] hover:underline">
           Sign in here
         </Link>
       </div>
