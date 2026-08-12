@@ -27,7 +27,7 @@ export function normalizeApiError(error) {
   if (error?.request) {
     return {
       success: false,
-      message: 'Network error. Please check your internet connection or server status.',
+      message: 'Unable to connect to the server. Please try again.',
       errors: [],
     };
   }
@@ -39,3 +39,55 @@ export function normalizeApiError(error) {
     errors: [],
   };
 }
+
+/**
+ * Extract clean, user-friendly authentication error messages from RTK Query or Axios error payloads
+ * @param {Object} err - Caught error object from RTK Query unwrap() or Axios
+ * @param {boolean} [isLoginFlow=false] - Whether the error occurred during login form submission
+ * @returns {string} User friendly error string
+ */
+export function getAuthErrorMessage(err, isLoginFlow = false) {
+  if (!err) return 'An unexpected error occurred. Please try again.';
+
+  // RTK Query FETCH_ERROR or Axios network error
+  if (
+    err?.status === 'FETCH_ERROR' ||
+    err?.status === 'TIMEOUT_ERROR' ||
+    err?.error?.includes('Failed to fetch') ||
+    err?.request
+  ) {
+    return 'Unable to connect to the server. Please try again.';
+  }
+
+  const status = err?.status || err?.response?.status;
+  const backendMessage = err?.data?.message || err?.response?.data?.message;
+
+  if (status === 401) {
+    return isLoginFlow
+      ? 'Invalid email or password.'
+      : 'Session expired. Please log in again.';
+  }
+
+  if (status === 403) {
+    return 'You do not have permission to perform this action.';
+  }
+
+  if (status === 404) {
+    return 'Requested authentication endpoint was not found.';
+  }
+
+  if (status === 500) {
+    return 'Server error occurred. Please try again later.';
+  }
+
+  if (backendMessage && typeof backendMessage === 'string' && !backendMessage.startsWith('AxiosError')) {
+    return backendMessage;
+  }
+
+  if (typeof err?.message === 'string' && !err.message.startsWith('AxiosError')) {
+    return err.message;
+  }
+
+  return 'Authentication failed. Please check your credentials and try again.';
+}
+

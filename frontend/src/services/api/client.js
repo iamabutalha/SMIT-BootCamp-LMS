@@ -37,11 +37,18 @@ apiClient.interceptors.response.use(
   (error) => {
     const normalizedError = normalizeApiError(error);
 
-    // If HTTP status is 401 Unauthorized, automatically handle token expiration/cleanup
+    // If HTTP status is 401 Unauthorized on protected routes, handle token expiration/cleanup
     if (error?.response?.status === 401) {
-      clearAuthStorage();
-      // Dispatch a custom window event so store / router can react if needed
-      window.dispatchEvent(new CustomEvent('smit:unauthorized'));
+      const token = tokenStorage.get();
+      const isDemoToken = Boolean(token && String(token).startsWith('demo_'));
+      const url = error.config?.url;
+      const isAuthEndpoint = url?.includes('/auth/login') || url?.includes('/auth/register');
+
+      if (!isAuthEndpoint && !isDemoToken) {
+        clearAuthStorage();
+        // Dispatch a custom window event so store / router can react if needed
+        window.dispatchEvent(new CustomEvent('smit:unauthorized'));
+      }
     }
 
     return Promise.reject(normalizedError);

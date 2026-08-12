@@ -12,6 +12,7 @@ import { ProfileImageUpload } from './ProfileImageUpload';
 import { Input } from '@/components/ui/Input';
 import { Button } from '@/components/ui/Button';
 import { ROUTES } from '@/constants/routes';
+import { getAuthErrorMessage } from '@/utils/errorUtils';
 
 const signupSchema = z
   .object({
@@ -53,6 +54,8 @@ export function SignupForm() {
   });
 
   const onSubmit = async (values) => {
+    if (isSubmitting) return;
+
     try {
       const bodyData = {
         name: values.name,
@@ -65,12 +68,13 @@ export function SignupForm() {
       const { token, user } = response.data || {};
 
       if (!token || !user) {
-        throw new Error(response.message || 'Registration completed without session payload');
+        toast.success(response.message || 'Account created successfully! Please sign in.');
+        navigate(ROUTES.LOGIN, { replace: true });
+        return;
       }
 
       let updatedUser = user;
 
-      // Upload profile image if user attached a file during signup
       if (values.profileImage && values.profileImage instanceof File) {
         try {
           const formData = new FormData();
@@ -96,13 +100,7 @@ export function SignupForm() {
 
       navigate(ROUTES.STUDENT.ROOT, { replace: true });
     } catch (err) {
-      if (err?.status === 'FETCH_ERROR' || err?.error?.includes('Failed to fetch')) {
-        toast.error('Unable to connect to server. Please check if backend API server is running on http://localhost:5000.');
-      } else {
-        toast.error(
-          err?.data?.message || err?.message || 'Registration failed. Please check your details and try again.'
-        );
-      }
+      toast.error(getAuthErrorMessage(err, false));
     }
   };
 
@@ -143,7 +141,7 @@ export function SignupForm() {
         {...register('email')}
       />
 
-      {/* PHONE NUMBER (OPTIONAL) */}
+      {/* PHONE NUMBER */}
       <Input
         label="PHONE NUMBER (OPTIONAL)"
         type="tel"
@@ -183,15 +181,15 @@ export function SignupForm() {
         fullWidth
         isLoading={isSubmitting}
         icon={<UserPlus className="w-4 h-4" />}
-        className="w-full bg-[#006B3C] hover:bg-[#005530] text-white py-3 h-12 text-base font-bold rounded-xl shadow-md transition-all mt-2"
+        className="w-full bg-[#0072BC] hover:bg-[#005e9c] text-white py-3 h-11 text-sm font-extrabold rounded-xl shadow-xs transition-all cursor-pointer mt-2"
       >
         Create Account
       </Button>
 
       {/* Footer Link */}
-      <div className="text-center pt-3 text-xs text-slate-600">
+      <div className="text-center pt-2 text-xs text-slate-600">
         Already have an account?{' '}
-        <Link to={ROUTES.LOGIN} className="font-bold text-[#006B3C] hover:underline">
+        <Link to={ROUTES.LOGIN} className="font-bold text-[#0072BC] hover:underline">
           Sign in here
         </Link>
       </div>
