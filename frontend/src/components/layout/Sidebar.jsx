@@ -45,9 +45,9 @@ const navigationItems = [
     icon: FolderKanban,
   },
   {
-    label: "Reports",
-    path: "/reports",
-    icon: BarChart3,
+    label: "Teams",
+    path: "/teams",
+    icon: Users,
   },
 ];
 
@@ -87,11 +87,7 @@ function Sidebar({ isOpen, onClose }) {
           duration-200
           lg:static
           lg:translate-x-0
-          ${
-            isOpen
-              ? "translate-x-0"
-              : "-translate-x-full"
-          }
+          ${isOpen ? "translate-x-0" : "-translate-x-full"}
         `}
       >
         {/* Logo */}
@@ -112,13 +108,9 @@ function Sidebar({ isOpen, onClose }) {
             </div>
 
             <div>
-              <p className="text-sm font-bold text-text">
-                Bootcamp LMS
-              </p>
+              <p className="text-sm font-bold text-text">Bootcamp LMS</p>
 
-              <p className="text-[11px] text-text-muted">
-                Learning Management
-              </p>
+              <p className="text-[11px] text-text-muted">Learning Management</p>
             </div>
           </div>
 
