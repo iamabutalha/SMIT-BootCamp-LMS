@@ -1,4 +1,23 @@
-import { createSlice } from "@reduxjs/toolkit";
+import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
+import studentService from "../../services/studentService";
+
+// ============================================================
+// Async Thunks
+// ============================================================
+
+export const fetchStudents = createAsyncThunk(
+  "students/fetchStudents",
+  async (_, { rejectWithValue }) => {
+    try {
+      const data = await studentService.getStudents();
+      return Array.isArray(data) ? data : [];
+    } catch (error) {
+      return rejectWithValue(
+        error.response?.data?.message || "Failed to load students"
+      );
+    }
+  }
+);
 
 // ============================================================
 // Students Initial State
@@ -17,36 +36,22 @@ const initialState = {
 
 const studentsSlice = createSlice({
   name: "students",
-
   initialState,
 
   reducers: {
-    // --------------------------------------------------------
-    // Set all students
-    // --------------------------------------------------------
-
     setStudents: (state, action) => {
       state.data = action.payload;
       state.error = null;
     },
 
-    // --------------------------------------------------------
-    // Add student
-    // --------------------------------------------------------
-
     addStudent: (state, action) => {
       state.data.push(action.payload);
     },
 
-    // --------------------------------------------------------
-    // Update student
-    // --------------------------------------------------------
-
     updateStudent: (state, action) => {
       const updatedStudent = action.payload;
-
       const index = state.data.findIndex(
-        (student) => student.id === updatedStudent.id
+        (student) => student.id === updatedStudent.id || student._id === updatedStudent._id
       );
 
       if (index !== -1) {
@@ -54,59 +59,31 @@ const studentsSlice = createSlice({
       }
     },
 
-    // --------------------------------------------------------
-    // Delete student
-    // --------------------------------------------------------
-
     deleteStudent: (state, action) => {
       state.data = state.data.filter(
-        (student) => student.id !== action.payload
+        (student) => student.id !== action.payload && student._id !== action.payload
       );
     },
-
-    // --------------------------------------------------------
-    // Select single student
-    // --------------------------------------------------------
 
     setSelectedStudent: (state, action) => {
       state.selectedStudent = action.payload;
     },
 
-    // --------------------------------------------------------
-    // Clear selected student
-    // --------------------------------------------------------
-
     clearSelectedStudent: (state) => {
       state.selectedStudent = null;
     },
-
-    // --------------------------------------------------------
-    // Loading
-    // --------------------------------------------------------
 
     setStudentsLoading: (state, action) => {
       state.loading = action.payload;
     },
 
-    // --------------------------------------------------------
-    // Error
-    // --------------------------------------------------------
-
     setStudentsError: (state, action) => {
       state.error = action.payload;
     },
 
-    // --------------------------------------------------------
-    // Clear error
-    // --------------------------------------------------------
-
     clearStudentsError: (state) => {
       state.error = null;
     },
-
-    // --------------------------------------------------------
-    // Clear all students
-    // --------------------------------------------------------
 
     clearStudents: (state) => {
       state.data = [];
@@ -114,11 +91,23 @@ const studentsSlice = createSlice({
       state.error = null;
     },
   },
-});
 
-// ============================================================
-// Actions
-// ============================================================
+  extraReducers: (builder) => {
+    builder
+      .addCase(fetchStudents.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(fetchStudents.fulfilled, (state, action) => {
+        state.loading = false;
+        state.data = action.payload;
+      })
+      .addCase(fetchStudents.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload || "Failed to load students";
+      });
+  },
+});
 
 export const {
   setStudents,
@@ -132,9 +121,5 @@ export const {
   clearStudentsError,
   clearStudents,
 } = studentsSlice.actions;
-
-// ============================================================
-// Reducer
-// ============================================================
 
 export default studentsSlice.reducer;

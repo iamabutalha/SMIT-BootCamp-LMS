@@ -1,4 +1,23 @@
-import { createSlice } from "@reduxjs/toolkit";
+import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
+import attendanceService from "../../services/attendanceService";
+
+// ============================================================
+// Async Thunks
+// ============================================================
+
+export const fetchAttendance = createAsyncThunk(
+  "attendance/fetchAttendance",
+  async (_, { rejectWithValue }) => {
+    try {
+      const data = await attendanceService.getAttendance();
+      return Array.isArray(data) ? data : [];
+    } catch (error) {
+      return rejectWithValue(
+        error.response?.data?.message || "Failed to load attendance records"
+      );
+    }
+  }
+);
 
 // ============================================================
 // Attendance Initial State
@@ -16,36 +35,22 @@ const initialState = {
 
 const attendanceSlice = createSlice({
   name: "attendance",
-
   initialState,
 
   reducers: {
-    // --------------------------------------------------------
-    // Set attendance records
-    // --------------------------------------------------------
-
     setAttendance: (state, action) => {
       state.data = action.payload;
       state.error = null;
     },
 
-    // --------------------------------------------------------
-    // Add attendance record
-    // --------------------------------------------------------
-
     addAttendance: (state, action) => {
       state.data.push(action.payload);
     },
 
-    // --------------------------------------------------------
-    // Update attendance record
-    // --------------------------------------------------------
-
     updateAttendance: (state, action) => {
       const updatedAttendance = action.payload;
-
       const index = state.data.findIndex(
-        (attendance) => attendance.id === updatedAttendance.id
+        (att) => att.id === updatedAttendance.id || att._id === updatedAttendance._id
       );
 
       if (index !== -1) {
@@ -53,54 +58,46 @@ const attendanceSlice = createSlice({
       }
     },
 
-    // --------------------------------------------------------
-    // Delete attendance record
-    // --------------------------------------------------------
-
     deleteAttendance: (state, action) => {
       state.data = state.data.filter(
-        (attendance) => attendance.id !== action.payload
+        (att) => att.id !== action.payload && att._id !== action.payload
       );
     },
-
-    // --------------------------------------------------------
-    // Loading
-    // --------------------------------------------------------
 
     setAttendanceLoading: (state, action) => {
       state.loading = action.payload;
     },
 
-    // --------------------------------------------------------
-    // Error
-    // --------------------------------------------------------
-
     setAttendanceError: (state, action) => {
       state.error = action.payload;
     },
 
-    // --------------------------------------------------------
-    // Clear error
-    // --------------------------------------------------------
-
     clearAttendanceError: (state) => {
       state.error = null;
     },
-
-    // --------------------------------------------------------
-    // Clear attendance
-    // --------------------------------------------------------
 
     clearAttendance: (state) => {
       state.data = [];
       state.error = null;
     },
   },
-});
 
-// ============================================================
-// Actions
-// ============================================================
+  extraReducers: (builder) => {
+    builder
+      .addCase(fetchAttendance.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(fetchAttendance.fulfilled, (state, action) => {
+        state.loading = false;
+        state.data = action.payload;
+      })
+      .addCase(fetchAttendance.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload || "Failed to load attendance records";
+      });
+  },
+});
 
 export const {
   setAttendance,
@@ -112,9 +109,5 @@ export const {
   clearAttendanceError,
   clearAttendance,
 } = attendanceSlice.actions;
-
-// ============================================================
-// Reducer
-// ============================================================
 
 export default attendanceSlice.reducer;

@@ -1,4 +1,4 @@
-import apiClient from "../../app/apiClient";
+import apiClient from "./apiClient";
 
 // ============================================================
 // Attendance API Service
@@ -11,7 +11,7 @@ const attendanceService = {
       "/attendance"
     );
 
-    return response.data;
+    return response.data?.data || response.data;
   },
 
   // Get attendance for a specific student
