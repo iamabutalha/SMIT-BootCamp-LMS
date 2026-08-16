@@ -98,7 +98,9 @@ function Sidebar({ isOpen, onClose }) {
           left-0
           z-40
           flex
+          h-full
           w-64
+          shrink-0
           flex-col
           border-r
           border-border
@@ -111,7 +113,7 @@ function Sidebar({ isOpen, onClose }) {
         `}
       >
         {/* Logo */}
-        <div className="flex h-16 items-center justify-between border-b border-border px-5">
+        <div className="flex h-16 shrink-0 items-center justify-between border-b border-border px-5">
           <BrandLogo size="md" />
 
           {/* Mobile Close */}
@@ -180,7 +182,7 @@ function Sidebar({ isOpen, onClose }) {
         </nav>
 
         {/* Bottom Section */}
-        <div className="space-y-1 border-t border-border p-4">
+        <div className="shrink-0 space-y-1 border-t border-border p-4">
           <NavLink
             to="/settings"
             onClick={onClose}

@@ -1,4 +1,4 @@
-import apiClient from "../../app/apiClient";
+import apiClient from "./apiClient";
 
 // ============================================================
 // Student API Service
@@ -9,7 +9,7 @@ const studentService = {
   getStudents: async () => {
     const response = await apiClient.get("/students");
 
-    return response.data;
+    return response.data?.data || response.data;
   },
 
   // Get single student

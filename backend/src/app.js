@@ -9,6 +9,7 @@ const attendanceRoutes = require("./routes/attendanceRoutes");
 const teamRoutes = require("./routes/teamRoutes");
 const projectRoutes = require("./routes/projectRoutes");
 const taskRoutes = require("./routes/taskRoutes");
+const courseRoutes = require("./routes/courseRoutes");
 
 const { protect } = require("./middleware/authMiddleware");
 const notFound = require("./middleware/notFoundMiddleware");
@@ -41,6 +42,7 @@ app.use("/api/attendance", protect, attendanceRoutes);
 app.use("/api/teams", protect, teamRoutes);
 app.use("/api/projects", protect, projectRoutes);
 app.use("/api/tasks", protect, taskRoutes);
+app.use("/api/courses", protect, courseRoutes);
 
 app.use(notFound);
 app.use(errorHandler);
