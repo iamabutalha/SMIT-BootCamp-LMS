@@ -18,37 +18,39 @@ const navigationItems = [
     label: "Dashboard",
     path: "/dashboard",
     icon: LayoutDashboard,
+    colorClass: "text-blue-500",
   },
   {
     label: "Students",
     path: "/students",
     icon: Users,
+    colorClass: "text-emerald-500",
   },
   {
     label: "Attendance",
     path: "/attendance",
     icon: CalendarCheck,
+    colorClass: "text-rose-500",
   },
   {
     label: "Tasks",
     path: "/tasks",
     icon: ClipboardList,
+    colorClass: "text-amber-500",
   },
   {
     label: "Courses",
     path: "/courses",
     icon: BookOpen,
+    colorClass: "text-indigo-500",
   },
   {
     label: "Projects",
     path: "/projects",
     icon: FolderKanban,
+    colorClass: "text-violet-500",
   },
-  {
-    label: "Teams",
-    path: "/teams",
-    icon: Users,
-  },
+  { label: "Teams", path: "/teams", icon: Users, colorClass: "text-cyan-500" },
 ];
 
 function Sidebar({ isOpen, onClose }) {
@@ -170,7 +172,7 @@ function Sidebar({ isOpen, onClose }) {
                     `
                   }
                 >
-                  <Icon className="h-8 w-6 shrink-0" />
+                  <Icon className={`h-8 w-6 shrink-0 ${item.colorClass}`} />
 
                   <span>{item.label}</span>
                 </NavLink>
