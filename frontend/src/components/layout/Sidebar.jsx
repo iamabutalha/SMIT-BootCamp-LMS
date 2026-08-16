@@ -45,9 +45,9 @@ const navigationItems = [
     icon: FolderKanban,
   },
   {
-    label: "Reports",
-    path: "/reports",
-    icon: BarChart3,
+    label: "Teams",
+    path: "/teams",
+    icon: Users,
   },
 ];
 
@@ -170,7 +170,7 @@ function Sidebar({ isOpen, onClose }) {
                     `
                   }
                 >
-                  <Icon className="h-8 w-7 shrink-0" />
+                  <Icon className="h-8 w-6 shrink-0" />
 
                   <span>{item.label}</span>
                 </NavLink>
