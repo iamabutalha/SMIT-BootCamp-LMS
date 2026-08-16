@@ -1,21 +1,21 @@
 import { useEffect } from "react";
-import MainLayout from "../components/layout/MainLayout";
-import PageHeader from "../components/common/PageHeader";
-import Table from "../components/ui/Table";
-import Badge from "../components/ui/Badge";
-import Button from "../components/ui/Button";
-import Select from "../components/ui/Select";
-import Input from "../components/ui/Input";
-import LoadingState from "../components/common/LoadingState";
-import EmptyState from "../components/common/EmptyState";
-import ErrorState from "../components/common/ErrorState";
+import MainLayout from "../../components/layout/MainLayout";
+import PageHeader from "../../components/common/PageHeader";
+import Table from "../../components/ui/Table";
+import Badge from "../../components/ui/Badge";
+import Button from "../../components/ui/Button";
+import Select from "../../components/ui/Select";
+import Input from "../../components/ui/Input";
+import LoadingState from "../../components/common/LoadingState";
+import EmptyState from "../../components/common/EmptyState";
+import ErrorState from "../../components/common/ErrorState";
 
-import TaskModal from "./Tasks/TaskModal";
-import TaskDetailModal from "./Tasks/TaskDetailModal";
-import DeleteTaskModal from "./Tasks/DeleteTaskModal";
-import StudentTaskHistoryModal from "./Tasks/StudentTaskHistoryModal";
+import TaskModal from "./modals/TaskModal";
+import TaskDetailModal from "./modals/TaskDetailModal";
+import DeleteTaskModal from "./modals/DeleteTaskModal";
+import StudentTaskHistoryModal from "./modals/StudentTaskHistoryModal";
 
-import { useAppDispatch, useAppSelector } from "../hooks";
+import { useAppDispatch, useAppSelector } from "../../hooks";
 import {
   fetchTasks,
   fetchStudents,
@@ -34,7 +34,7 @@ import {
   closeDeleteModal,
   openHistoryModal,
   closeHistoryModal,
-} from "../store/slices/taskSlice";
+} from "../../store/slices/taskSlice";
 
 import {
   Plus,
