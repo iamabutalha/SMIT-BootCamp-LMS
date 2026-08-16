@@ -7,7 +7,7 @@ async function seedAdmin() {
 
   const name = process.env.ADMIN_NAME || "Bootcamp Admin";
   const email = (process.env.ADMIN_EMAIL || "admin@example.com").toLowerCase();
-  const password = process.env.ADMIN_PASSWORD;
+  const password = process.env.ADMIN_PASSWORD || "admin1234";
 
   if (!password || password.length < 8) {
     throw new Error("ADMIN_PASSWORD must be at least 8 characters");
@@ -23,7 +23,7 @@ async function seedAdmin() {
   await Admin.create({
     name,
     email,
-    password
+    password,
   });
 
   console.log(`Admin created for ${nodeEnv}: ${email}`);
