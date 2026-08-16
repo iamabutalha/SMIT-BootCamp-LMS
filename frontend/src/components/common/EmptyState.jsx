@@ -4,6 +4,7 @@ function EmptyState({
   title = "No data available",
   description = "There is nothing to display here yet.",
   icon: Icon = Inbox,
+  iconColor = "text-primary",
 }) {
   return (
     <div className="flex min-h-40 flex-col items-center justify-center px-6 py-8 text-center">
@@ -19,16 +20,12 @@ function EmptyState({
           text-primary
         "
       >
-        <Icon className="h-6 w-6" />
+        <Icon className={`h-8 w-7 ${iconColor}`} />
       </div>
 
-      <h3 className="mt-4 text-sm font-semibold text-text">
-        {title}
-      </h3>
+      <h3 className="mt-4 text-sm font-semibold text-text">{title}</h3>
 
-      <p className="mt-1 max-w-sm text-sm text-text-muted">
-        {description}
-      </p>
+      <p className="mt-1 max-w-sm text-sm text-text-muted">{description}</p>
     </div>
   );
 }
