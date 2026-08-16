@@ -1,54 +1,143 @@
+import { useEffect } from "react";
 import { Routes, Route, Navigate } from "react-router-dom";
+import { useAppDispatch } from "../hooks";
+import authService from "../services/authService";
+import {
+  setCredentials,
+  setInitializing,
+  logout,
+} from "../store/slices/authSlice";
 
-import AuthLayout from "../components/layout/AuthLayout";
-import MainLayout from "../components/layout/MainLayout";
+import ProtectedRoute from "../components/auth/ProtectedRoute";
+import PublicRoute from "../components/auth/PublicRoute";
 
-import Login from "../pages/Login";
-import Dashboard from "../pages/Dashboard";
-import Attendance from "../pages/Attendance/Attendance";
-import Students from "../pages/Students/Students";
-
-import Tasks from "../pages/Tasks";
-import Teams from "../pages/Teams";
-import Projects from "../pages/Projects";
+import Login from "../pages/auth/Login";
+import Dashboard from "../pages/dashboard/Dashboard";
+import Attendance from "../pages/attendance/Attendance";
+import Students from "../pages/students/Students";
+import Tasks from "../pages/tasks/Tasks";
+import Teams from "../pages/teams/Teams";
+import Courses from "../pages/courses/Courses";
+import Settings from "../pages/settings/Settings";
 
 function AppRoutes() {
+  const dispatch = useAppDispatch();
+
+  useEffect(() => {
+    let isMounted = true;
+
+    async function initAuth() {
+      const token = localStorage.getItem("token");
+
+      if (!token) {
+        if (isMounted) {
+          dispatch(setInitializing(false));
+        }
+        return;
+      }
+
+      try {
+        const user = await authService.getCurrentUser();
+        if (isMounted && user) {
+          dispatch(setCredentials({ user, token }));
+        }
+      } catch {
+        if (isMounted) {
+          dispatch(logout());
+        }
+      } finally {
+        if (isMounted) {
+          dispatch(setInitializing(false));
+        }
+      }
+    }
+
+    initAuth();
+
+    return () => {
+      isMounted = false;
+    };
+  }, [dispatch]);
+
   return (
     <Routes>
-      {/* Authentication */}
-      <Route element={<AuthLayout />}>
-        <Route path="/login" element={<Login />} />
-      </Route>
+      {/* Public Routes */}
+      <Route
+        path="/login"
+        element={
+          <PublicRoute>
+            <Login />
+          </PublicRoute>
+        }
+      />
 
-      {/* Main App Routes */}
+      {/* Protected Routes */}
       <Route
         path="/dashboard"
         element={
-          <MainLayout
-            title="Dashboard"
-            subtitle="Welcome back to Bootcamp LMS"
-          >
+          <ProtectedRoute>
             <Dashboard />
-          </MainLayout>
+          </ProtectedRoute>
         }
       />
-      <Route path="/students" element={<Students />} />
-      <Route path="/attendance" element={<Attendance />} />
-      <Route path="/tasks" element={<Tasks />} />
-      <Route path="/teams" element={<Teams />} />
-      <Route path="/projects" element={<Projects />} />
 
-      {/* Default */}
       <Route
-        path="/"
-        element={<Navigate to="/dashboard" replace />}
+        path="/students"
+        element={
+          <ProtectedRoute>
+            <Students />
+          </ProtectedRoute>
+        }
       />
 
-      {/* Unknown routes */}
       <Route
-        path="*"
-        element={<Navigate to="/dashboard" replace />}
+        path="/attendance"
+        element={
+          <ProtectedRoute>
+            <Attendance />
+          </ProtectedRoute>
+        }
       />
+
+      <Route
+        path="/tasks"
+        element={
+          <ProtectedRoute>
+            <Tasks />
+          </ProtectedRoute>
+        }
+      />
+
+      <Route
+        path="/teams"
+        element={
+          <ProtectedRoute>
+            <Teams />
+          </ProtectedRoute>
+        }
+      />
+
+      <Route
+        path="/courses"
+        element={
+          <ProtectedRoute>
+            <Courses />
+          </ProtectedRoute>
+        }
+      />
+
+      <Route
+        path="/settings"
+        element={
+          <ProtectedRoute>
+            <Settings />
+          </ProtectedRoute>
+        }
+      />
+
+      {/* Redirects */}
+      <Route path="/" element={<Navigate to="/dashboard" replace />} />
+      <Route path="*" element={<Navigate to="/dashboard" replace />} />
     </Routes>
   );
 }

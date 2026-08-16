@@ -1,20 +1,20 @@
 import { useEffect } from "react";
-import MainLayout from "../components/layout/MainLayout";
-import PageHeader from "../components/common/PageHeader";
-import Table from "../components/ui/Table";
-import Badge from "../components/ui/Badge";
-import Button from "../components/ui/Button";
-import Input from "../components/ui/Input";
-import LoadingState from "../components/common/LoadingState";
-import EmptyState from "../components/common/EmptyState";
-import ErrorState from "../components/common/ErrorState";
+import MainLayout from "../../components/layout/MainLayout";
+import PageHeader from "../../components/common/PageHeader";
+import Table from "../../components/ui/Table";
+import Badge from "../../components/ui/Badge";
+import Button from "../../components/ui/Button";
+import Input from "../../components/ui/Input";
+import LoadingState from "../../components/common/LoadingState";
+import EmptyState from "../../components/common/EmptyState";
+import ErrorState from "../../components/common/ErrorState";
 
-import TeamModal from "./Teams/TeamModal";
-import TeamDetailModal from "./Teams/TeamDetailModal";
-import DeleteTeamModal from "./Teams/DeleteTeamModal";
-import ManageMembersModal from "./Teams/ManageMembersModal";
+import TeamModal from "./modals/TeamModal";
+import TeamDetailModal from "./modals/TeamDetailModal";
+import DeleteTeamModal from "./modals/DeleteTeamModal";
+import ManageMembersModal from "./modals/ManageMembersModal";
 
-import { useAppDispatch, useAppSelector } from "../hooks";
+import { useAppDispatch, useAppSelector } from "../../hooks";
 import {
   fetchTeams,
   fetchStudents,
@@ -35,7 +35,7 @@ import {
   closeDeleteModal,
   openMembersModal,
   closeMembersModal,
-} from "../store/slices/teamSlice";
+} from "../../store/slices/teamSlice";
 
 import {
   Plus,

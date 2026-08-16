@@ -1,17 +1,24 @@
+import { useState } from "react";
 import {
   BarChart3,
   BookOpen,
   CalendarCheck,
   ClipboardList,
-  FolderKanban,
   GraduationCap,
   LayoutDashboard,
+  LogOut,
   Settings,
   Users,
   X,
 } from "lucide-react";
 
-import { NavLink } from "react-router-dom";
+import { NavLink, useNavigate } from "react-router-dom";
+import BrandLogo from "../common/BrandLogo";
+import Modal from "../ui/Modal";
+import Button from "../ui/Button";
+import { useAppDispatch } from "../../hooks";
+import { logout } from "../../store/slices/authSlice";
+import authService from "../../services/authService";
 
 const navigationItems = [
   {
@@ -44,16 +51,27 @@ const navigationItems = [
     icon: BookOpen,
     colorClass: "text-indigo-500",
   },
-  {
-    label: "Projects",
-    path: "/projects",
-    icon: FolderKanban,
-    colorClass: "text-violet-500",
-  },
   { label: "Teams", path: "/teams", icon: Users, colorClass: "text-cyan-500" },
 ];
 
 function Sidebar({ isOpen, onClose }) {
+  const dispatch = useAppDispatch();
+  const navigate = useNavigate();
+  const [showLogoutConfirm, setShowLogoutConfirm] = useState(false);
+
+  const confirmLogout = async () => {
+    try {
+      await authService.logout();
+    } catch {
+      // Ignore network errors
+    } finally {
+      setShowLogoutConfirm(false);
+      dispatch(logout());
+      navigate("/login", { replace: true });
+      if (onClose) onClose();
+    }
+  };
+
   return (
     <>
       {/* Mobile Overlay */}
@@ -94,27 +112,7 @@ function Sidebar({ isOpen, onClose }) {
       >
         {/* Logo */}
         <div className="flex h-16 items-center justify-between border-b border-border px-5">
-          <div className="flex items-center gap-3">
-            <div
-              className="
-                flex
-                h-9
-                w-9
-                items-center
-                justify-center
-                rounded-lg
-                bg-primary
-              "
-            >
-              <GraduationCap className="h-5 w-5 text-white" />
-            </div>
-
-            <div>
-              <p className="text-sm font-bold text-text">SMIT</p>
-
-              <p className="text-[11px] text-text-muted">LMS</p>
-            </div>
-          </div>
+          <BrandLogo size="md" />
 
           {/* Mobile Close */}
           <button
@@ -182,7 +180,7 @@ function Sidebar({ isOpen, onClose }) {
         </nav>
 
         {/* Bottom Section */}
-        <div className="border-t border-border p-4">
+        <div className="space-y-1 border-t border-border p-4">
           <NavLink
             to="/settings"
             onClick={onClose}
@@ -209,10 +207,64 @@ function Sidebar({ isOpen, onClose }) {
 
             <span>Settings</span>
           </NavLink>
+
+          <button
+            type="button"
+            onClick={() => setShowLogoutConfirm(true)}
+            className="
+              flex
+              w-full
+              items-center
+              gap-3
+              rounded-lg
+              px-3
+              py-2.5
+              text-sm
+              font-medium
+              text-danger
+              transition
+              hover:bg-danger/10
+            "
+          >
+            <LogOut className="h-5 w-5" />
+            <span>Logout</span>
+          </button>
         </div>
       </aside>
+
+      {/* Logout Confirmation Modal */}
+      <Modal
+        isOpen={showLogoutConfirm}
+        onClose={() => setShowLogoutConfirm(false)}
+        title="Confirm Logout"
+        size="sm"
+        footer={
+          <>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => setShowLogoutConfirm(false)}
+            >
+              Cancel
+            </Button>
+            <Button
+              variant="danger"
+              size="sm"
+              onClick={confirmLogout}
+            >
+              Log Out
+            </Button>
+          </>
+        }
+      >
+        <p className="text-sm text-text">
+          Are you sure you want to log out of Bootcamp LMS? You will need to log back in to access protected pages.
+        </p>
+      </Modal>
     </>
   );
 }
 
 export default Sidebar;
+
+
