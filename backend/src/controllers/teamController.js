@@ -8,14 +8,21 @@ const listTeams = asyncHandler(async (req, res) => {
     .populate("project")
     .sort({ createdAt: -1 });
 
-  const withCounts = await Promise.all(
+  const withMembers = await Promise.all(
     teams.map(async (team) => {
-      const memberCount = await Student.countDocuments({ team: team._id });
-      return { ...team.toObject(), memberCount };
+      const members = await Student.find({ team: team._id }).select("rollNumber name course batch");
+      const leader = members[0] || null;
+      return {
+        ...team.toObject(),
+        members,
+        memberCount: members.length,
+        leaderName: leader ? leader.name : "Not Assigned",
+        leaderId: leader ? leader._id : null
+      };
     })
   );
 
-  res.json({ success: true, data: withCounts });
+  res.json({ success: true, data: withMembers });
 });
 
 const getTeam = asyncHandler(async (req, res) => {
@@ -26,11 +33,18 @@ const getTeam = asyncHandler(async (req, res) => {
   }
 
   const members = await Student.find({ team: team._id }).sort({ name: 1 });
+  const leader = members[0] || null;
 
   res.json({
     success: true,
     data: {
-      team,
+      team: {
+        ...team.toObject(),
+        members,
+        memberCount: members.length,
+        leaderName: leader ? leader.name : "Not Assigned",
+        leaderId: leader ? leader._id : null
+      },
       members,
       memberCount: members.length
     }
@@ -38,32 +52,90 @@ const getTeam = asyncHandler(async (req, res) => {
 });
 
 const createTeam = asyncHandler(async (req, res) => {
-  const { name, project } = req.body;
+  const { name, memberIds = [] } = req.body;
+
+  if (!name || !name.trim()) {
+    return res.status(400).json({ success: false, message: "Team name is required" });
+  }
 
   const team = await Team.create({
-    name,
-    project: project || null
+    name: name.trim()
   });
 
-  const populated = await team.populate("project");
+  if (Array.isArray(memberIds) && memberIds.length > 0) {
+    const validIds = memberIds.filter((id) => typeof id === "string" && id.match(/^[0-9a-fA-F]{24}$/));
+    if (validIds.length > 0) {
+      await Student.updateMany(
+        { _id: { $in: validIds } },
+        { team: team._id }
+      );
+    }
+  }
 
-  res.status(201).json({ success: true, data: populated });
+  const members = await Student.find({ team: team._id }).select("rollNumber name course batch");
+  const leader = members[0] || null;
+
+  res.status(201).json({
+    success: true,
+    data: {
+      ...team.toObject(),
+      members,
+      memberCount: members.length,
+      leaderName: leader ? leader.name : "Not Assigned",
+      leaderId: leader ? leader._id : null
+    }
+  });
 });
 
 const updateTeam = asyncHandler(async (req, res) => {
-  const { name, project } = req.body;
+  const { name, memberIds = [] } = req.body;
+
+  const updates = {};
+  if (name && name.trim()) {
+    updates.name = name.trim();
+  }
 
   const team = await Team.findByIdAndUpdate(
     req.params.id,
-    { name, project: project || null },
+    updates,
     { new: true, runValidators: true }
-  ).populate("project");
+  );
 
   if (!team) {
     return res.status(404).json({ success: false, message: "Team not found" });
   }
 
-  res.json({ success: true, data: team });
+  if (Array.isArray(memberIds)) {
+    const validIds = memberIds.filter((id) => typeof id === "string" && id.match(/^[0-9a-fA-F]{24}$/));
+    
+    // Unassign students removed from team
+    await Student.updateMany(
+      { team: team._id, _id: { $nin: validIds } },
+      { team: null }
+    );
+    
+    // Assign selected students to team
+    if (validIds.length > 0) {
+      await Student.updateMany(
+        { _id: { $in: validIds } },
+        { team: team._id }
+      );
+    }
+  }
+
+  const members = await Student.find({ team: team._id }).select("rollNumber name course batch");
+  const leader = members[0] || null;
+
+  res.json({
+    success: true,
+    data: {
+      ...team.toObject(),
+      members,
+      memberCount: members.length,
+      leaderName: leader ? leader.name : "Not Assigned",
+      leaderId: leader ? leader._id : null
+    }
+  });
 });
 
 const deleteTeam = asyncHandler(async (req, res) => {
@@ -73,18 +145,12 @@ const deleteTeam = asyncHandler(async (req, res) => {
     return res.status(404).json({ success: false, message: "Team not found" });
   }
 
-  const memberCount = await Student.countDocuments({ team: team._id });
-
-  if (memberCount > 0) {
-    return res.status(409).json({
-      success: false,
-      message: "Cannot delete a team that still has students"
-    });
-  }
+  // Unassign students linked to deleted team
+  await Student.updateMany({ team: team._id }, { team: null });
 
   await team.deleteOne();
 
-  res.json({ success: true, message: "Team deleted" });
+  res.json({ success: true, message: "Team deleted successfully" });
 });
 
 const createProject = asyncHandler(async (req, res) => {

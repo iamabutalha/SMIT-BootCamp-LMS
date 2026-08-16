@@ -6,9 +6,11 @@ export const fetchTeams = createAsyncThunk(
   async (filters, { rejectWithValue }) => {
     try {
       const teams = await teamService.getTeams(filters);
-      return teams;
+      return Array.isArray(teams) ? teams : [];
     } catch (error) {
-      return rejectWithValue(error.message || "Failed to fetch teams");
+      return rejectWithValue(
+        error.response?.data?.message || error.message || "Failed to fetch teams"
+      );
     }
   }
 );
@@ -18,9 +20,11 @@ export const fetchStudents = createAsyncThunk(
   async (_, { rejectWithValue }) => {
     try {
       const students = await teamService.getStudents();
-      return students;
+      return Array.isArray(students) ? students : [];
     } catch (error) {
-      return rejectWithValue(error.message || "Failed to fetch students");
+      return rejectWithValue(
+        error.response?.data?.message || error.message || "Failed to fetch students"
+      );
     }
   }
 );
@@ -32,7 +36,9 @@ export const createTeamThunk = createAsyncThunk(
       const newTeam = await teamService.createTeam(teamPayload);
       return newTeam;
     } catch (error) {
-      return rejectWithValue(error.message || "Failed to create team");
+      return rejectWithValue(
+        error.response?.data?.message || error.message || "Failed to create team"
+      );
     }
   }
 );
@@ -44,7 +50,9 @@ export const updateTeamThunk = createAsyncThunk(
       const updatedTeam = await teamService.updateTeam(id, teamPayload);
       return updatedTeam;
     } catch (error) {
-      return rejectWithValue(error.message || "Failed to update team");
+      return rejectWithValue(
+        error.response?.data?.message || error.message || "Failed to update team"
+      );
     }
   }
 );
@@ -56,7 +64,9 @@ export const deleteTeamThunk = createAsyncThunk(
       await teamService.deleteTeam(id);
       return id;
     } catch (error) {
-      return rejectWithValue(error.message || "Failed to delete team");
+      return rejectWithValue(
+        error.response?.data?.message || error.message || "Failed to delete team"
+      );
     }
   }
 );
@@ -68,7 +78,9 @@ export const addMemberThunk = createAsyncThunk(
       const updatedTeam = await teamService.addMember(teamId, studentId);
       return updatedTeam;
     } catch (error) {
-      return rejectWithValue(error.message || "Failed to add member to team");
+      return rejectWithValue(
+        error.response?.data?.message || error.message || "Failed to add member to team"
+      );
     }
   }
 );
@@ -80,7 +92,9 @@ export const removeMemberThunk = createAsyncThunk(
       const updatedTeam = await teamService.removeMember(teamId, studentId);
       return updatedTeam;
     } catch (error) {
-      return rejectWithValue(error.message || "Failed to remove member from team");
+      return rejectWithValue(
+        error.response?.data?.message || error.message || "Failed to remove member from team"
+      );
     }
   }
 );
@@ -92,7 +106,9 @@ export const changeLeaderThunk = createAsyncThunk(
       const updatedTeam = await teamService.changeLeader(teamId, leaderId);
       return updatedTeam;
     } catch (error) {
-      return rejectWithValue(error.message || "Failed to change team leader");
+      return rejectWithValue(
+        error.response?.data?.message || error.message || "Failed to change team leader"
+      );
     }
   }
 );
@@ -219,15 +235,10 @@ const teamSlice = createSlice({
       .addCase(updateTeamThunk.fulfilled, (state, action) => {
         state.actionLoading = false;
         state.teamModalOpen = false;
+        const updated = action.payload;
         state.teams = state.teams.map((t) =>
-          t.id === action.payload.id ? action.payload : t
+          (t._id || t.id) === (updated._id || updated.id) ? updated : t
         );
-        if (state.selectedTeam?.id === action.payload.id) {
-          state.selectedTeam = action.payload;
-        }
-        if (state.managingTeam?.id === action.payload.id) {
-          state.managingTeam = action.payload;
-        }
       })
       .addCase(updateTeamThunk.rejected, (state, action) => {
         state.actionLoading = false;
@@ -243,75 +254,12 @@ const teamSlice = createSlice({
         state.actionLoading = false;
         state.deleteModalOpen = false;
         state.deletingTeam = null;
-        state.teams = state.teams.filter((t) => t.id !== action.payload);
+        const deletedId = action.payload;
+        state.teams = state.teams.filter(
+          (t) => t._id !== deletedId && t.id !== deletedId
+        );
       })
       .addCase(deleteTeamThunk.rejected, (state, action) => {
-        state.actionLoading = false;
-        state.actionError = action.payload;
-      })
-
-      // addMemberThunk
-      .addCase(addMemberThunk.pending, (state) => {
-        state.actionLoading = true;
-        state.actionError = null;
-      })
-      .addCase(addMemberThunk.fulfilled, (state, action) => {
-        state.actionLoading = false;
-        state.teams = state.teams.map((t) =>
-          t.id === action.payload.id ? action.payload : t
-        );
-        if (state.managingTeam?.id === action.payload.id) {
-          state.managingTeam = action.payload;
-        }
-        if (state.selectedTeam?.id === action.payload.id) {
-          state.selectedTeam = action.payload;
-        }
-      })
-      .addCase(addMemberThunk.rejected, (state, action) => {
-        state.actionLoading = false;
-        state.actionError = action.payload;
-      })
-
-      // removeMemberThunk
-      .addCase(removeMemberThunk.pending, (state) => {
-        state.actionLoading = true;
-        state.actionError = null;
-      })
-      .addCase(removeMemberThunk.fulfilled, (state, action) => {
-        state.actionLoading = false;
-        state.teams = state.teams.map((t) =>
-          t.id === action.payload.id ? action.payload : t
-        );
-        if (state.managingTeam?.id === action.payload.id) {
-          state.managingTeam = action.payload;
-        }
-        if (state.selectedTeam?.id === action.payload.id) {
-          state.selectedTeam = action.payload;
-        }
-      })
-      .addCase(removeMemberThunk.rejected, (state, action) => {
-        state.actionLoading = false;
-        state.actionError = action.payload;
-      })
-
-      // changeLeaderThunk
-      .addCase(changeLeaderThunk.pending, (state) => {
-        state.actionLoading = true;
-        state.actionError = null;
-      })
-      .addCase(changeLeaderThunk.fulfilled, (state, action) => {
-        state.actionLoading = false;
-        state.teams = state.teams.map((t) =>
-          t.id === action.payload.id ? action.payload : t
-        );
-        if (state.managingTeam?.id === action.payload.id) {
-          state.managingTeam = action.payload;
-        }
-        if (state.selectedTeam?.id === action.payload.id) {
-          state.selectedTeam = action.payload;
-        }
-      })
-      .addCase(changeLeaderThunk.rejected, (state, action) => {
         state.actionLoading = false;
         state.actionError = action.payload;
       });

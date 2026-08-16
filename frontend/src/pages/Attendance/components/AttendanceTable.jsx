@@ -38,32 +38,47 @@ function AttendanceTable({
     {
       key: "rollNumber",
       label: "Roll Number",
+      render: (row) => (
+        <span className="font-mono text-xs font-semibold text-primary">
+          {row.student?.rollNumber || row.studentId?.rollNumber || row.rollNumber || "-"}
+        </span>
+      ),
     },
 
     {
       key: "name",
       label: "Student Name",
+      render: (row) => (
+        <span className="font-semibold text-text">
+          {row.student?.name || row.studentId?.name || row.name || row.studentName || "-"}
+        </span>
+      ),
     },
 
     {
       key: "course",
       label: "Course",
+      render: (row) => (
+        <span className="text-xs text-text-muted">
+          {row.student?.course || row.studentId?.course || row.course || "-"}
+        </span>
+      ),
     },
 
     {
       key: "batch",
       label: "Batch",
+      render: (row) => (
+        <span className="text-xs text-text-muted">
+          {row.student?.batch || row.studentId?.batch || row.batch || "-"}
+        </span>
+      ),
     },
 
     {
       key: "status",
       label: "Attendance Status",
-
-      // ------------------------------------------------------
-      // Custom Status Badge
-      // ------------------------------------------------------
-
-      render: (student) => (
+      render: (row) => (
         <span
           className={`
             inline-flex
@@ -72,10 +87,10 @@ function AttendanceTable({
             py-1
             text-xs
             font-semibold
-            ${getStatusClass(student.status)}
+            ${getStatusClass(row.status)}
           `}
         >
-          {student.status}
+          {row.status}
         </span>
       ),
     },
@@ -83,19 +98,12 @@ function AttendanceTable({
     {
       key: "action",
       label: "Action",
-
-      // ------------------------------------------------------
-      // Action Buttons
-      // ------------------------------------------------------
-
-      render: (student) => (
+      render: (row) => (
         <div className="flex flex-wrap items-center gap-2">
-
           {/* View History */}
-
           <button
             type="button"
-            onClick={() => onViewHistory(student)}
+            onClick={() => onViewHistory(row.student || row)}
             className="
               rounded-lg
               px-3
@@ -111,10 +119,9 @@ function AttendanceTable({
           </button>
 
           {/* Edit Attendance */}
-
           <button
             type="button"
-            onClick={() => onEdit(student)}
+            onClick={() => onEdit(row)}
             className="
               rounded-lg
               px-3
@@ -129,7 +136,6 @@ function AttendanceTable({
           >
             Edit
           </button>
-
         </div>
       ),
     },
@@ -143,7 +149,7 @@ function AttendanceTable({
     <Table
       columns={columns}
       data={attendance}
-      rowKey="id"
+      rowKey={(r) => r._id || r.id}
       emptyMessage="No attendance records found."
     />
   );

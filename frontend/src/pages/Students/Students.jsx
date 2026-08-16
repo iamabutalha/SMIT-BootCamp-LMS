@@ -12,8 +12,9 @@ import EmptyState from "../../components/common/EmptyState";
 import { useAppDispatch, useAppSelector } from "../../hooks";
 import {
   fetchStudents,
-  addStudent,
-  updateStudent,
+  addStudentThunk,
+  updateStudentThunk,
+  deleteStudentThunk,
   setSelectedStudent,
   clearSelectedStudent,
 } from "../../store/slices/studentsSlice";
@@ -27,6 +28,7 @@ function Students() {
   const [search, setSearch] = useState("");
   const [showForm, setShowForm] = useState(false);
   const [editingStudent, setEditingStudent] = useState(null);
+  const [actionError, setActionError] = useState("");
 
   useEffect(() => {
     dispatch(fetchStudents());
@@ -50,13 +52,15 @@ function Students() {
     });
   }, [students, search]);
 
-  const handleAddStudent = (studentData) => {
-    const newStudent = {
-      id: Date.now(),
-      ...studentData,
-    };
-    dispatch(addStudent(newStudent));
-    setShowForm(false);
+  const handleAddStudent = async (studentData) => {
+    try {
+      setActionError("");
+      await dispatch(addStudentThunk(studentData)).unwrap();
+      setShowForm(false);
+    } catch (err) {
+      console.error("Add student failed:", err);
+      setActionError(typeof err === "string" ? err : "Failed to create student in database.");
+    }
   };
 
   const handleViewStudent = (student) => {
@@ -66,21 +70,37 @@ function Students() {
   const handleEditStudent = (student) => {
     setEditingStudent(student);
     setShowForm(true);
+    setActionError("");
   };
 
-  const handleUpdateStudent = (studentData) => {
-    const updatedStudent = {
-      ...editingStudent,
-      ...studentData,
-    };
-    dispatch(updateStudent(updatedStudent));
-    setShowForm(false);
-    setEditingStudent(null);
+  const handleUpdateStudent = async (studentData) => {
+    try {
+      setActionError("");
+      const id = editingStudent._id || editingStudent.id;
+      await dispatch(updateStudentThunk({ id, studentData })).unwrap();
+      setShowForm(false);
+      setEditingStudent(null);
+    } catch (err) {
+      console.error("Update student failed:", err);
+      setActionError(typeof err === "string" ? err : "Failed to update student in database.");
+    }
+  };
+
+  const handleDeleteStudent = async (student) => {
+    try {
+      setActionError("");
+      const id = student._id || student.id;
+      await dispatch(deleteStudentThunk(id)).unwrap();
+    } catch (err) {
+      console.error("Delete student failed:", err);
+      setActionError(typeof err === "string" ? err : "Failed to delete student from database.");
+    }
   };
 
   const handleCloseForm = () => {
     setShowForm(false);
     setEditingStudent(null);
+    setActionError("");
   };
 
   const handleCloseDetails = () => {
@@ -115,6 +135,7 @@ function Students() {
             type="button"
             onClick={() => {
               setEditingStudent(null);
+              setActionError("");
               setShowForm(true);
             }}
             className="inline-flex items-center justify-center gap-2 rounded-lg bg-primary px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-primary/90"
@@ -123,6 +144,13 @@ function Students() {
             Add Student
           </button>
         </div>
+
+        {/* Action Error Alert */}
+        {actionError && (
+          <div className="rounded-lg border border-danger/20 bg-danger/10 p-4 text-xs font-medium text-danger">
+            {actionError}
+          </div>
+        )}
 
         {/* Search */}
         <div className="rounded-xl border border-border bg-surface p-4">
@@ -159,6 +187,7 @@ function Students() {
             students={filteredStudents}
             onView={handleViewStudent}
             onEdit={handleEditStudent}
+            onDelete={handleDeleteStudent}
           />
         )}
 

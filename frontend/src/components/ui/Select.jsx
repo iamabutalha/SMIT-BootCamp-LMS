@@ -1,10 +1,11 @@
 function Select({
   label,
   options = [],
+  children,
   error,
   helperText,
   required = false,
-  placeholder = "Select an option",
+  placeholder,
   id,
   className = "",
   ...props
@@ -14,7 +15,7 @@ function Select({
       {label && (
         <label
           htmlFor={id}
-          className="mb-1.5 block text-sm font-medium text-text"
+          className="mb-1.5 block text-xs font-semibold text-text"
         >
           {label}
 
@@ -52,18 +53,22 @@ function Select({
         aria-invalid={Boolean(error)}
         {...props}
       >
-        <option value="" disabled>
-          {placeholder}
-        </option>
-
-        {options.map((option) => (
-          <option
-            key={option.value}
-            value={option.value}
-          >
-            {option.label}
+        {placeholder && (
+          <option value="" disabled>
+            {placeholder}
           </option>
-        ))}
+        )}
+
+        {options.length > 0
+          ? options.map((option) => (
+              <option
+                key={typeof option === "object" ? option.value : option}
+                value={typeof option === "object" ? option.value : option}
+              >
+                {typeof option === "object" ? option.label : option}
+              </option>
+            ))
+          : children}
       </select>
 
       {error ? (
