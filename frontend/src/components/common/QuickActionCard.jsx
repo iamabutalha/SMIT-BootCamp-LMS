@@ -6,6 +6,7 @@ function QuickActionCard({
   description,
   to,
   icon: Icon,
+  iconColor = "text-primary",
 }) {
   return (
     <Link
@@ -36,7 +37,7 @@ function QuickActionCard({
             text-primary
           "
         >
-          <Icon className="h-5 w-5" />
+          <Icon className={`h-8 w-7 ${iconColor}`} />
         </div>
 
         <ArrowRight
@@ -51,13 +52,9 @@ function QuickActionCard({
         />
       </div>
 
-      <h3 className="mt-4 font-medium text-text">
-        {title}
-      </h3>
+      <h3 className="mt-4 font-medium text-text">{title}</h3>
 
-      <p className="mt-1 text-xs text-text-muted">
-        {description}
-      </p>
+      <p className="mt-1 text-xs text-text-muted">{description}</p>
     </Link>
   );
 }

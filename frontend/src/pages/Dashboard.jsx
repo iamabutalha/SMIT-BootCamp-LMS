@@ -61,9 +61,7 @@ function Dashboard() {
         {/* Recent Tasks */}
         <div className="rounded-xl border border-border bg-surface">
           <div className="border-b border-border p-5">
-            <h2 className="font-semibold text-text">
-              Recent Tasks
-            </h2>
+            <h2 className="font-semibold text-text">Recent Tasks</h2>
 
             <p className="mt-1 text-sm text-text-muted">
               Your latest assigned tasks.
@@ -74,15 +72,14 @@ function Dashboard() {
             icon={ClipboardList}
             title="No tasks available"
             description="Assigned tasks will appear here once they are created."
+            iconColor="text-purple-500"
           />
         </div>
 
         {/* Attendance Overview */}
         <div className="rounded-xl border border-border bg-surface">
           <div className="border-b border-border p-5">
-            <h2 className="font-semibold text-text">
-              Attendance Overview
-            </h2>
+            <h2 className="font-semibold text-text">Attendance Overview</h2>
 
             <p className="mt-1 text-sm text-text-muted">
               Your recent attendance information.
@@ -102,9 +99,7 @@ function Dashboard() {
       ======================================== */}
       <div className="rounded-xl border border-border bg-surface">
         <div className="border-b border-border p-5">
-          <h2 className="font-semibold text-text">
-            Quick Actions
-          </h2>
+          <h2 className="font-semibold text-text">Quick Actions</h2>
 
           <p className="mt-1 text-sm text-text-muted">
             Quickly access common LMS features.
@@ -117,6 +112,7 @@ function Dashboard() {
             description="Manage bootcamp students"
             to="/students"
             icon={Users}
+            iconColor="text-blue-500"
           />
 
           <QuickActionCard
@@ -124,6 +120,7 @@ function Dashboard() {
             description="Check attendance records"
             to="/attendance"
             icon={ClipboardCheck}
+            iconColor="text-green-500"
           />
 
           <QuickActionCard
@@ -131,6 +128,7 @@ function Dashboard() {
             description="Check assigned tasks"
             to="/tasks"
             icon={ClipboardList}
+            iconColor="text-orange-500"
           />
 
           <QuickActionCard
@@ -138,6 +136,7 @@ function Dashboard() {
             description="View your projects"
             to="/projects"
             icon={FolderKanban}
+            iconColor="text-purple-500"
           />
         </div>
       </div>
