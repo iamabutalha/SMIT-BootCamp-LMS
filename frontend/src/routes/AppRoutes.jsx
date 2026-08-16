@@ -5,8 +5,9 @@ import MainLayout from "../components/layout/MainLayout";
 
 import Login from "../pages/Login";
 import Dashboard from "../pages/Dashboard";
-import Attendance from "../pages/Attendance";
-import Students from "../pages/Students";
+import Attendance from "../pages/Attendance/Attendance";
+import Students from "../pages/Students/Students";
+
 import Tasks from "../pages/Tasks";
 import Teams from "../pages/Teams";
 import Projects from "../pages/Projects";
@@ -52,4 +53,4 @@ function AppRoutes() {
   );
 }
 
-export default AppRoutes;
+export default AppRoutes;
