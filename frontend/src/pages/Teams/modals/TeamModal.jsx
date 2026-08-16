@@ -3,7 +3,9 @@ import Modal from "../../../components/ui/Modal";
 import Input from "../../../components/ui/Input";
 import Select from "../../../components/ui/Select";
 import Button from "../../../components/ui/Button";
-import { UserCheck, Users } from "lucide-react";
+import { Users } from "lucide-react";
+
+const getObjId = (item) => (typeof item === "object" ? item?._id || item?.id : item);
 
 function TeamModal({
   isOpen,
@@ -26,14 +28,15 @@ function TeamModal({
 
   useEffect(() => {
     if (team) {
-      const existingMemberIds = (team.members || []).map((m) => m.id);
+      const existingMemberIds = (team.members || []).map(getObjId).filter(Boolean);
+      const existingLeaderId = getObjId(team.leaderId || team.leader) || existingMemberIds[0] || "";
       setFormData({
         name: team.name || "",
         memberIds: existingMemberIds,
-        leaderId: team.leaderId || existingMemberIds[0] || "",
+        leaderId: existingLeaderId,
       });
     } else {
-      const initialMemberIds = students.length > 0 ? [students[0].id] : [];
+      const initialMemberIds = students.length > 0 ? [getObjId(students[0])] : [];
       setFormData({
         name: "",
         memberIds: initialMemberIds,
@@ -54,7 +57,6 @@ function TeamModal({
         updatedMemberIds = [...prev.memberIds, studentId];
       }
 
-      // If removed member was currently chosen as leader, reassign leader
       let updatedLeaderId = prev.leaderId;
       if (isSelected && prev.leaderId === studentId) {
         updatedLeaderId = updatedMemberIds.length > 0 ? updatedMemberIds[0] : "";
@@ -71,6 +73,9 @@ function TeamModal({
 
     if (errors.memberIds) {
       setErrors((prev) => ({ ...prev, memberIds: "" }));
+    }
+    if (errors.leaderId) {
+      setErrors((prev) => ({ ...prev, leaderId: "" }));
     }
   };
 
@@ -106,12 +111,12 @@ function TeamModal({
 
   // Filter student options for leader select to selected members
   const selectedStudentObjects = students.filter((s) =>
-    formData.memberIds.includes(s.id)
+    formData.memberIds.includes(getObjId(s))
   );
 
   const leaderOptions = selectedStudentObjects.map((s) => ({
-    value: s.id,
-    label: `${s.name} (${s.rollNumber})`,
+    value: getObjId(s),
+    label: `${s.name} (${s.rollNumber || "N/A"})`,
   }));
 
   const footer = (
@@ -172,10 +177,11 @@ function TeamModal({
               </p>
             ) : (
               students.map((student) => {
-                const isChecked = formData.memberIds.includes(student.id);
+                const sId = getObjId(student);
+                const isChecked = formData.memberIds.includes(sId);
                 return (
                   <label
-                    key={student.id}
+                    key={sId}
                     className={`flex items-center justify-between rounded-md px-3 py-2 text-sm cursor-pointer transition ${
                       isChecked
                         ? "bg-primary/10 text-primary font-medium"
@@ -186,7 +192,7 @@ function TeamModal({
                       <input
                         type="checkbox"
                         checked={isChecked}
-                        onChange={() => handleMemberToggle(student.id)}
+                        onChange={() => handleMemberToggle(sId)}
                         className="h-4 w-4 rounded border-border text-primary focus:ring-primary"
                       />
                       <span>{student.name}</span>

@@ -19,6 +19,34 @@ export const fetchAttendance = createAsyncThunk(
   }
 );
 
+export const markAttendanceThunk = createAsyncThunk(
+  "attendance/markAttendance",
+  async (attendanceData, { rejectWithValue }) => {
+    try {
+      const record = await attendanceService.createAttendance(attendanceData);
+      return record;
+    } catch (error) {
+      return rejectWithValue(
+        error.response?.data?.message || "Failed to mark attendance in database"
+      );
+    }
+  }
+);
+
+export const updateAttendanceThunk = createAsyncThunk(
+  "attendance/updateAttendance",
+  async ({ id, attendanceData }, { rejectWithValue }) => {
+    try {
+      const updated = await attendanceService.updateAttendance(id, attendanceData);
+      return updated;
+    } catch (error) {
+      return rejectWithValue(
+        error.response?.data?.message || "Failed to update attendance in database"
+      );
+    }
+  }
+);
+
 // ============================================================
 // Attendance Initial State
 // ============================================================
@@ -95,6 +123,26 @@ const attendanceSlice = createSlice({
       .addCase(fetchAttendance.rejected, (state, action) => {
         state.loading = false;
         state.error = action.payload || "Failed to load attendance records";
+      })
+      .addCase(markAttendanceThunk.fulfilled, (state, action) => {
+        const record = action.payload;
+        const index = state.data.findIndex(
+          (a) => a._id === record._id || a.id === record.id
+        );
+        if (index !== -1) {
+          state.data[index] = record;
+        } else {
+          state.data.unshift(record);
+        }
+      })
+      .addCase(updateAttendanceThunk.fulfilled, (state, action) => {
+        const updated = action.payload;
+        const index = state.data.findIndex(
+          (a) => a._id === updated._id || a.id === updated.id
+        );
+        if (index !== -1) {
+          state.data[index] = updated;
+        }
       });
   },
 });

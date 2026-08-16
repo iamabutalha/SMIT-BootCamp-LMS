@@ -86,8 +86,9 @@ function Teams() {
 
   const handleCreateOrUpdateSubmit = (formData) => {
     if (selectedTeam) {
+      const teamId = selectedTeam._id || selectedTeam.id;
       dispatch(
-        updateTeamThunk({ id: selectedTeam.id, teamPayload: formData })
+        updateTeamThunk({ id: teamId, teamPayload: formData })
       );
     } else {
       dispatch(createTeamThunk(formData));
@@ -95,7 +96,8 @@ function Teams() {
   };
 
   const handleDeleteConfirm = (id) => {
-    dispatch(deleteTeamThunk(id));
+    const teamId = typeof id === "object" ? id?._id || id?.id : id;
+    dispatch(deleteTeamThunk(teamId));
   };
 
   const handleAddMember = (teamId, studentId) => {
@@ -165,7 +167,13 @@ function Teams() {
       label: "Created Date",
       render: (row) => (
         <span className="text-xs font-medium text-text-muted">
-          {row.createdAt || "N/A"}
+          {row.createdAt
+            ? new Date(row.createdAt).toLocaleDateString("en-US", {
+                month: "short",
+                day: "numeric",
+                year: "numeric",
+              })
+            : "N/A"}
         </span>
       ),
     },
@@ -304,7 +312,7 @@ function Teams() {
             columns={columns}
             data={teams}
             emptyMessage="No teams found."
-            rowKey="id"
+            rowKey={(r) => r._id || r.id}
           />
         )}
 

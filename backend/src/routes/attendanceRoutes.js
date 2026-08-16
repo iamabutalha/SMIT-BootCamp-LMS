@@ -8,7 +8,7 @@ const {
 
 const router = express.Router();
 
-router.get("/", listAttendance);
+router.route("/").get(listAttendance).post(markAttendance);
 router.post("/mark", markAttendance);
 router.put("/:id", updateAttendance);
 router.get("/student/:studentId/history", getStudentHistory);

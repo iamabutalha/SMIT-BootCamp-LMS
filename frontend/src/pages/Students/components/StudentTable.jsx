@@ -38,6 +38,13 @@ function StudentTable({
     {
       key: "team",
       label: "Team",
+      render: (row) => (
+        <span className="text-xs text-text-muted">
+          {typeof row.team === "object" && row.team?.name
+            ? row.team.name
+            : row.team || "-"}
+        </span>
+      ),
     },
 
     {

@@ -12,8 +12,8 @@ import EmptyState from "../../components/common/EmptyState";
 import { useAppDispatch, useAppSelector } from "../../hooks";
 import {
   fetchAttendance,
-  addAttendance,
-  updateAttendance,
+  markAttendanceThunk,
+  updateAttendanceThunk,
 } from "../../store/slices/attendanceSlice";
 
 function Attendance() {
@@ -26,6 +26,7 @@ function Attendance() {
   const [filter, setFilter] = useState("Daily");
   const [showForm, setShowForm] = useState(false);
   const [selectedStudent, setSelectedStudent] = useState(null);
+  const [actionError, setActionError] = useState("");
 
   useEffect(() => {
     dispatch(fetchAttendance());
@@ -40,10 +41,10 @@ function Attendance() {
     }
 
     return list.filter((record) => {
-      const rollNumber = record.rollNumber || record.studentId?.rollNumber || "";
-      const name = record.name || record.studentName || record.studentId?.name || "";
-      const course = record.course || record.studentId?.course || "";
-      const batch = record.batch || record.studentId?.batch || "";
+      const rollNumber = record.student?.rollNumber || record.studentId?.rollNumber || record.rollNumber || "";
+      const name = record.student?.name || record.studentId?.name || record.name || record.studentName || "";
+      const course = record.student?.course || record.studentId?.course || record.course || "";
+      const batch = record.student?.batch || record.studentId?.batch || record.batch || "";
 
       return (
         rollNumber.toLowerCase().includes(searchValue) ||
@@ -54,26 +55,32 @@ function Attendance() {
     });
   }, [attendanceList, search]);
 
-  const handleMarkAttendance = (attendanceData) => {
-    const newRecord = {
-      id: Date.now(),
-      rollNumber: attendanceData.rollNumber,
-      name: attendanceData.name,
-      course: attendanceData.course,
-      batch: attendanceData.batch,
-      status: attendanceData.status,
-      date: new Date().toISOString().split("T")[0],
-    };
-
-    dispatch(addAttendance(newRecord));
-    setShowForm(false);
+  const handleMarkAttendance = async (attendanceData) => {
+    try {
+      setActionError("");
+      if (showForm?.mode === "edit" && showForm?.student?._id) {
+        await dispatch(
+          updateAttendanceThunk({
+            id: showForm.student._id,
+            attendanceData: { status: attendanceData.status },
+          })
+        ).unwrap();
+      } else {
+        await dispatch(markAttendanceThunk(attendanceData)).unwrap();
+      }
+      setShowForm(false);
+    } catch (err) {
+      console.error("Mark attendance error:", err);
+      setActionError(typeof err === "string" ? err : "Failed to mark attendance.");
+    }
   };
 
-  const handleEditAttendance = (student) => {
+  const handleEditAttendance = (record) => {
     setShowForm({
       mode: "edit",
-      student,
+      student: record,
     });
+    setActionError("");
   };
 
   const handleViewHistory = (student) => {
@@ -110,13 +117,23 @@ function Attendance() {
 
           <button
             type="button"
-            onClick={() => setShowForm(true)}
+            onClick={() => {
+              setActionError("");
+              setShowForm(true);
+            }}
             className="inline-flex items-center justify-center gap-2 rounded-lg bg-primary px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-primary/90 focus:outline-none focus:ring-2 focus:ring-primary/20"
           >
             <Plus className="h-4 w-4" />
             Mark Attendance
           </button>
         </div>
+
+        {/* Action Error Alert */}
+        {actionError && (
+          <div className="rounded-lg border border-danger/20 bg-danger/10 p-4 text-xs font-medium text-danger">
+            {actionError}
+          </div>
+        )}
 
         {/* Filters */}
         <div className="flex flex-col gap-4 rounded-xl border border-border bg-surface p-4 lg:flex-row lg:items-center lg:justify-between">
