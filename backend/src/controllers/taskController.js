@@ -45,14 +45,46 @@ const getTask = asyncHandler(async (req, res) => {
 });
 
 const createTask = asyncHandler(async (req, res) => {
+  console.log("=== CREATE TASK REQUEST ===");
+  console.log("Request body:", req.body);
+  
   const { student, title, description, dueDate, status } = req.body;
 
-  const studentExists = await Student.exists({ _id: student });
-
-  if (!studentExists) {
-    return res.status(404).json({ success: false, message: "Student not found" });
+  // Validate student field exists
+  if (!student) {
+    console.log("ERROR: Student ID is missing");
+    return res.status(400).json({ 
+      success: false, 
+      message: "Student ID is required" 
+    });
   }
 
+  console.log("Student ID:", student);
+
+  // Validate MongoDB ObjectId format
+  const mongoose = require("mongoose");
+  if (!mongoose.Types.ObjectId.isValid(student)) {
+    console.log("ERROR: Invalid ObjectId format:", student);
+    return res.status(400).json({ 
+      success: false, 
+      message: "Invalid student ID format" 
+    });
+  }
+
+  // Check if student exists
+  const studentExists = await Student.exists({ _id: student });
+  console.log("Student exists in DB:", studentExists);
+
+  if (!studentExists) {
+    console.log("ERROR: Student not found in database");
+    return res.status(404).json({ 
+      success: false, 
+      message: "Student not found" 
+    });
+  }
+
+  // Create task
+  console.log("Creating task with data:", { student, title, description, dueDate, status });
   const task = await Task.create({
     student,
     title,
@@ -61,10 +93,15 @@ const createTask = asyncHandler(async (req, res) => {
     status: status || "Pending"
   });
 
+  console.log("Task created in DB:", task);
+
   const populated = await task.populate(
     "student",
     "rollNumber name course batch team"
   );
+
+  console.log("Task populated:", populated);
+  console.log("=== CREATE TASK SUCCESS ===");
 
   res.status(201).json({ success: true, data: populated });
 });

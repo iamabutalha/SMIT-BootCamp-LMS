@@ -27,12 +27,18 @@ export const fetchStudents = createAsyncThunk(
 
 export const createTaskThunk = createAsyncThunk(
   "tasks/createTask",
-  async (taskPayload, { rejectWithValue, dispatch }) => {
+  async (taskPayload, { rejectWithValue }) => {
     try {
+      console.log("Creating task with payload:", taskPayload);
       const newTask = await taskService.createTask(taskPayload);
+      console.log("Task created successfully:", newTask);
+      
       return newTask;
     } catch (error) {
-      return rejectWithValue(error.message || "Failed to create task");
+      console.error("Task creation error:", error);
+      const errorMessage = error.response?.data?.message || error.message || "Failed to create task";
+      console.error("Error message:", errorMessage);
+      return rejectWithValue(errorMessage);
     }
   }
 );
@@ -41,10 +47,14 @@ export const updateTaskThunk = createAsyncThunk(
   "tasks/updateTask",
   async ({ id, taskPayload }, { rejectWithValue }) => {
     try {
+      console.log("Updating task:", { id, taskPayload });
       const updatedTask = await taskService.updateTask(id, taskPayload);
+      console.log("Task updated successfully:", updatedTask);
       return updatedTask;
     } catch (error) {
-      return rejectWithValue(error.message || "Failed to update task");
+      console.error("Task update error:", error);
+      const errorMessage = error.response?.data?.message || error.message || "Failed to update task";
+      return rejectWithValue(errorMessage);
     }
   }
 );
@@ -53,10 +63,14 @@ export const updateTaskStatusThunk = createAsyncThunk(
   "tasks/updateTaskStatus",
   async ({ id, status }, { rejectWithValue }) => {
     try {
+      console.log("Updating task status:", { id, status });
       const updatedTask = await taskService.updateTaskStatus(id, status);
+      console.log("Task status updated successfully:", updatedTask);
       return updatedTask;
     } catch (error) {
-      return rejectWithValue(error.message || "Failed to update status");
+      console.error("Task status update error:", error);
+      const errorMessage = error.response?.data?.message || error.message || "Failed to update status";
+      return rejectWithValue(errorMessage);
     }
   }
 );
@@ -208,9 +222,15 @@ const taskSlice = createSlice({
         state.actionError = null;
       })
       .addCase(createTaskThunk.fulfilled, (state, action) => {
+        console.log("Redux - Task created successfully:", action.payload);
         state.actionLoading = false;
         state.taskModalOpen = false;
-        state.tasks = [action.payload, ...state.tasks];
+        
+        // Add new task to the beginning of the list
+        if (action.payload) {
+          state.tasks = [action.payload, ...state.tasks];
+          console.log("Redux - Updated tasks array length:", state.tasks.length);
+        }
       })
       .addCase(createTaskThunk.rejected, (state, action) => {
         state.actionLoading = false;
@@ -223,12 +243,24 @@ const taskSlice = createSlice({
         state.actionError = null;
       })
       .addCase(updateTaskThunk.fulfilled, (state, action) => {
+        console.log("Redux - Task updated:", action.payload);
         state.actionLoading = false;
         state.taskModalOpen = false;
-        state.tasks = state.tasks.map((t) =>
-          t.id === action.payload.id ? action.payload : t
-        );
-        if (state.selectedTask?.id === action.payload.id) {
+        
+        // Update task in the list
+        state.tasks = state.tasks.map((t) => {
+          if (t.id === action.payload.id || t._id === action.payload.id || t.id === action.payload._id) {
+            return action.payload;
+          }
+          return t;
+        });
+        
+        // Update selected task if it's the same one
+        if (state.selectedTask && (
+          state.selectedTask.id === action.payload.id || 
+          state.selectedTask._id === action.payload.id ||
+          state.selectedTask.id === action.payload._id
+        )) {
           state.selectedTask = action.payload;
         }
       })
@@ -238,13 +270,37 @@ const taskSlice = createSlice({
       })
 
       // updateTaskStatusThunk
+      .addCase(updateTaskStatusThunk.pending, (state) => {
+        console.log("Redux - Updating task status...");
+      })
       .addCase(updateTaskStatusThunk.fulfilled, (state, action) => {
-        state.tasks = state.tasks.map((t) =>
-          t.id === action.payload.id ? action.payload : t
-        );
-        if (state.selectedTask?.id === action.payload.id) {
+        console.log("Redux - Task status updated:", action.payload);
+        console.log("Redux - Looking for task with ID:", action.payload.id);
+        console.log("Redux - Current tasks IDs:", state.tasks.map(t => t.id));
+        
+        // Update task in the list
+        state.tasks = state.tasks.map((t) => {
+          if (t.id === action.payload.id || t._id === action.payload.id || t.id === action.payload._id) {
+            console.log("Redux - Found matching task, updating:", t.id);
+            return action.payload;
+          }
+          return t;
+        });
+        
+        // Update selected task if it's the same one
+        if (state.selectedTask && (
+          state.selectedTask.id === action.payload.id || 
+          state.selectedTask._id === action.payload.id ||
+          state.selectedTask.id === action.payload._id
+        )) {
           state.selectedTask = action.payload;
         }
+        
+        console.log("Redux - Tasks after status update:", state.tasks.length);
+      })
+      .addCase(updateTaskStatusThunk.rejected, (state, action) => {
+        console.error("Redux - Task status update failed:", action.payload);
+        state.actionError = action.payload;
       })
 
       // deleteTaskThunk

@@ -11,6 +11,16 @@ const attendanceService = {
     return response.data?.data || response.data;
   },
 
+  // Get students for attendance marking (with current status)
+  getStudentsForAttendance: async (params = {}) => {
+    const queryString = new URLSearchParams(params).toString();
+    const url = queryString 
+      ? `/attendance/students-for-marking?${queryString}` 
+      : '/attendance/students-for-marking';
+    const response = await apiClient.get(url);
+    return response.data?.data || response.data;
+  },
+
   // Get attendance for a specific student
   getStudentAttendance: async (studentId) => {
     const response = await apiClient.get(`/attendance/student/${studentId}`);
