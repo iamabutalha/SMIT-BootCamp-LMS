@@ -56,12 +56,27 @@ const createStudent = asyncHandler(async (req, res) => {
     });
   }
 
+  // Gracefully handle team field - accept ObjectId, empty, or treat invalid as null
+  let teamValue = null;
+  if (team) {
+    const teamStr = String(team).trim();
+    if (teamStr !== "") {
+      if (/^[0-9a-fA-F]{24}$/.test(teamStr)) {
+        teamValue = teamStr;
+      } else {
+        // Log warning but continue processing
+        console.warn(`[Student Creation] Invalid team format provided: "${teamStr}" - treating as no team`);
+        teamValue = null;
+      }
+    }
+  }
+
   const student = await Student.create({
     rollNumber,
     name,
     course,
     batch,
-    team: team || null
+    team: teamValue
   });
 
   const populated = await student.populate("team", "name project");
@@ -74,7 +89,30 @@ const updateStudent = asyncHandler(async (req, res) => {
   const updates = {};
 
   for (const key of allowed) {
-    if (req.body[key] !== undefined) updates[key] = req.body[key];
+    if (req.body[key] !== undefined) {
+      // Gracefully handle team field
+      if (key === "team") {
+        const teamValue = req.body[key];
+        if (teamValue) {
+          const teamStr = String(teamValue).trim();
+          if (teamStr !== "") {
+            if (/^[0-9a-fA-F]{24}$/.test(teamStr)) {
+              updates[key] = teamStr;
+            } else {
+              // Log warning but continue processing
+              console.warn(`[Student Update] Invalid team format provided: "${teamStr}" - treating as no team`);
+              updates[key] = null;
+            }
+          } else {
+            updates[key] = null;
+          }
+        } else {
+          updates[key] = null;
+        }
+      } else {
+        updates[key] = req.body[key];
+      }
+    }
   }
 
   if (updates.rollNumber && !/^\d{6}$/.test(String(updates.rollNumber))) {

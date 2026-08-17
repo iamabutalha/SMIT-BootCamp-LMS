@@ -19,6 +19,20 @@ export const fetchAttendance = createAsyncThunk(
   }
 );
 
+export const fetchStudentsForAttendance = createAsyncThunk(
+  "attendance/fetchStudentsForAttendance",
+  async (params = {}, { rejectWithValue }) => {
+    try {
+      const data = await attendanceService.getStudentsForAttendance(params);
+      return Array.isArray(data) ? data : [];
+    } catch (error) {
+      return rejectWithValue(
+        error.response?.data?.message || "Failed to load students for attendance"
+      );
+    }
+  }
+);
+
 export const markAttendanceThunk = createAsyncThunk(
   "attendance/markAttendance",
   async (attendanceData, { rejectWithValue }) => {
@@ -53,7 +67,9 @@ export const updateAttendanceThunk = createAsyncThunk(
 
 const initialState = {
   data: [],
+  studentsForMarking: [],
   loading: false,
+  studentsLoading: false,
   error: null,
 };
 
@@ -123,6 +139,18 @@ const attendanceSlice = createSlice({
       .addCase(fetchAttendance.rejected, (state, action) => {
         state.loading = false;
         state.error = action.payload || "Failed to load attendance records";
+      })
+      .addCase(fetchStudentsForAttendance.pending, (state) => {
+        state.studentsLoading = true;
+        state.error = null;
+      })
+      .addCase(fetchStudentsForAttendance.fulfilled, (state, action) => {
+        state.studentsLoading = false;
+        state.studentsForMarking = action.payload;
+      })
+      .addCase(fetchStudentsForAttendance.rejected, (state, action) => {
+        state.studentsLoading = false;
+        state.error = action.payload || "Failed to load students";
       })
       .addCase(markAttendanceThunk.fulfilled, (state, action) => {
         const record = action.payload;

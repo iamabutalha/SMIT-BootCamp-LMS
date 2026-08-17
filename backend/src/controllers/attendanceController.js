@@ -49,14 +49,7 @@ const listAttendance = asyncHandler(async (req, res) => {
 });
 
 const markAttendance = asyncHandler(async (req, res) => {
-  const { rollNumber, date, status } = req.body;
-
-  if (!/^\d{6}$/.test(String(rollNumber || ""))) {
-    return res.status(400).json({
-      success: false,
-      message: "Roll number must contain exactly 6 digits"
-    });
-  }
+  const { rollNumber, studentId, date, status } = req.body;
 
   if (!["Present", "Absent", "Leave"].includes(status)) {
     return res.status(400).json({
@@ -65,12 +58,35 @@ const markAttendance = asyncHandler(async (req, res) => {
     });
   }
 
-  const student = await Student.findOne({ rollNumber });
+  let student;
 
-  if (!student) {
-    return res.status(404).json({
+  // Support both rollNumber and studentId for flexibility
+  if (studentId) {
+    student = await Student.findById(studentId);
+    if (!student) {
+      return res.status(404).json({
+        success: false,
+        message: "Student not found"
+      });
+    }
+  } else if (rollNumber) {
+    if (!/^\d{6}$/.test(String(rollNumber))) {
+      return res.status(400).json({
+        success: false,
+        message: "Roll number must contain exactly 6 digits"
+      });
+    }
+    student = await Student.findOne({ rollNumber });
+    if (!student) {
+      return res.status(404).json({
+        success: false,
+        message: "Student not found"
+      });
+    }
+  } else {
+    return res.status(400).json({
       success: false,
-      message: "Student not found"
+      message: "Either rollNumber or studentId is required"
     });
   }
 
@@ -147,9 +163,66 @@ const getStudentHistory = asyncHandler(async (req, res) => {
   });
 });
 
+// New endpoint: Get students with today's attendance status
+const getStudentsForAttendance = asyncHandler(async (req, res) => {
+  const { date, course, batch, team } = req.query;
+  
+  // Get date range for today or specified date
+  const range = dayRange(date);
+  if (!range) {
+    return res.status(400).json({ success: false, message: "Invalid date" });
+  }
+
+  // Build student filter
+  const studentFilter = {};
+  if (course) studentFilter.course = course;
+  if (batch) studentFilter.batch = batch;
+  if (team) studentFilter.team = team;
+
+  // Get all students matching filter
+  const students = await Student.find(studentFilter)
+    .populate("team", "name")
+    .sort({ rollNumber: 1 });
+
+  // Get today's attendance for these students
+  const studentIds = students.map(s => s._id);
+  const attendanceRecords = await Attendance.find({
+    student: { $in: studentIds },
+    date: { $gte: range.start, $lt: range.end }
+  });
+
+  // Create a map of student ID to attendance status
+  const attendanceMap = {};
+  attendanceRecords.forEach(record => {
+    attendanceMap[record.student.toString()] = {
+      status: record.status,
+      _id: record._id
+    };
+  });
+
+  // Combine student data with attendance status
+  const studentsWithAttendance = students.map(student => ({
+    _id: student._id,
+    rollNumber: student.rollNumber,
+    name: student.name,
+    course: student.course,
+    batch: student.batch,
+    team: student.team,
+    attendanceStatus: attendanceMap[student._id.toString()]?.status || null,
+    attendanceId: attendanceMap[student._id.toString()]?._id || null
+  }));
+
+  res.json({ 
+    success: true, 
+    data: studentsWithAttendance,
+    date: range.start
+  });
+});
+
 module.exports = {
   listAttendance,
   markAttendance,
   updateAttendance,
-  getStudentHistory
+  getStudentHistory,
+  getStudentsForAttendance
 };
