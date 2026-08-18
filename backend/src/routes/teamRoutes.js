@@ -4,7 +4,10 @@ const {
   getTeam,
   createTeam,
   updateTeam,
-  deleteTeam
+  deleteTeam,
+  addMember,
+  removeMember,
+  changeLeader
 } = require("../controllers/teamController");
 
 const router = express.Router();
@@ -17,5 +20,10 @@ router.route("/:id")
   .get(getTeam)
   .put(updateTeam)
   .delete(deleteTeam);
+
+// Team member management routes
+router.post("/:id/members", addMember);
+router.delete("/:id/members/:studentId", removeMember);
+router.patch("/:id/leader", changeLeader);
 
 module.exports = router;

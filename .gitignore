@@ -23,5 +23,4 @@ obj/
 .idea/
 .DS_Store
 Thumbs.db
-IMPLEMENTATION_SUMMARY.md
-TASK_SYSTEM_FIXES.md
+**/*.md*

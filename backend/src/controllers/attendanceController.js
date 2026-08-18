@@ -95,13 +95,25 @@ const markAttendance = asyncHandler(async (req, res) => {
     return res.status(400).json({ success: false, message: "Invalid date" });
   }
 
-  const record = await Attendance.findOneAndUpdate(
-    { student: student._id, date: range.start },
-    { student: student._id, date: range.start, status },
-    { new: true, upsert: true, runValidators: true, setDefaultsOnInsert: true }
-  ).populate("student", "rollNumber name course batch team");
+  try {
+    const record = await Attendance.findOneAndUpdate(
+      { student: student._id, date: range.start },
+      { student: student._id, date: range.start, status },
+      { returnDocument: 'after', upsert: true, runValidators: true, setDefaultsOnInsert: true }
+    ).populate("student", "rollNumber name course batch team");
 
-  res.status(201).json({ success: true, data: record });
+    res.status(201).json({ success: true, data: record });
+  } catch (error) {
+    // Handle duplicate key error
+    if (error.code === 11000) {
+      console.error("Duplicate key error:", error);
+      return res.status(409).json({
+        success: false,
+        message: "A record with the same unique value already exists"
+      });
+    }
+    throw error;
+  }
 });
 
 const updateAttendance = asyncHandler(async (req, res) => {

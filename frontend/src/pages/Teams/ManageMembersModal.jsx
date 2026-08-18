@@ -18,12 +18,14 @@ function ManageMembersModal({
 }) {
   if (!team) return null;
 
+  // Handle both _id and id fields from MongoDB
+  const teamId = team._id || team.id;
   const members = team.members || [];
-  const memberIds = members.map((m) => m.id);
+  const memberIds = members.map((m) => m._id || m.id);
 
   // Available students not in current team
   const availableStudents = students.filter(
-    (student) => !memberIds.includes(student.id)
+    (student) => !memberIds.includes(student._id || student.id)
   );
 
   const [selectedStudentToAdd, setSelectedStudentToAdd] = useState("");
@@ -32,24 +34,24 @@ function ManageMembersModal({
   const handleAddSubmit = (e) => {
     e.preventDefault();
     if (!selectedStudentToAdd) return;
-    onAddMember(team.id, selectedStudentToAdd);
+    onAddMember(teamId, selectedStudentToAdd);
     setSelectedStudentToAdd("");
   };
 
   const handleChangeLeaderSubmit = (e) => {
     e.preventDefault();
     if (!selectedLeaderToAssign) return;
-    onChangeLeader(team.id, selectedLeaderToAssign);
+    onChangeLeader(teamId, selectedLeaderToAssign);
     setSelectedLeaderToAssign("");
   };
 
   const addStudentOptions = availableStudents.map((s) => ({
-    value: s.id,
+    value: s._id || s.id,
     label: `${s.name} (${s.rollNumber})`,
   }));
 
   const leaderStudentOptions = members.map((s) => ({
-    value: s.id,
+    value: s._id || s.id,
     label: `${s.name} (${s.rollNumber})`,
   }));
 
@@ -163,10 +165,11 @@ function ManageMembersModal({
               </p>
             ) : (
               members.map((member) => {
-                const isLeader = member.id === team.leaderId;
+                const memberId = member._id || member.id;
+                const isLeader = memberId === (team.leaderId?._id || team.leaderId);
                 return (
                   <div
-                    key={member.id}
+                    key={memberId}
                     className="flex items-center justify-between p-3 sm:px-4"
                   >
                     <div className="flex items-center gap-3">
@@ -195,7 +198,7 @@ function ManageMembersModal({
                         <Button
                           variant="ghost"
                           size="sm"
-                          onClick={() => onChangeLeader(team.id, member.id)}
+                          onClick={() => onChangeLeader(teamId, memberId)}
                           loading={loading}
                           title="Make Team Leader"
                           className="text-xs text-primary hover:underline"
@@ -207,7 +210,7 @@ function ManageMembersModal({
                       <Button
                         variant="ghost"
                         size="sm"
-                        onClick={() => onRemoveMember(team.id, member.id)}
+                        onClick={() => onRemoveMember(teamId, memberId)}
                         loading={loading}
                         title="Remove Member"
                       >

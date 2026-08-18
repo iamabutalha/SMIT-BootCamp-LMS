@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
-import { CalendarCheck, Search, Save } from "lucide-react";
+import { CalendarCheck, Search } from "lucide-react";
 
 import MainLayout from "../../components/layout/MainLayout";
 import AttendanceHistory from "./AttendanceHistory";
@@ -85,14 +85,54 @@ function Attendance() {
     });
   }, [studentsForMarking, search]);
 
-  // Handle status change for a student
-  const handleStatusChange = (studentId, status) => {
+  // Handle status change for a student - Save immediately to database
+  const handleStatusChange = async (studentId, status) => {
+    // Optimistically update UI
     setAttendanceChanges((prev) => ({
       ...prev,
       [studentId]: status,
     }));
     setActionError("");
     setSuccessMessage("");
+
+    try {
+      // Save to database immediately
+      await dispatch(markAttendanceThunk({ 
+        studentId, 
+        status, 
+        date: new Date().toISOString() 
+      })).unwrap();
+
+      // Update the local students list with the new status
+      const updatedStudents = studentsForMarking.map(s => 
+        s._id === studentId ? { ...s, attendanceStatus: status } : s
+      );
+      
+      // Remove from pending changes since it's saved
+      setAttendanceChanges((prev) => {
+        const updated = { ...prev };
+        delete updated[studentId];
+        return updated;
+      });
+
+      setSuccessMessage(`Attendance marked as ${status} for student`);
+      
+      // Clear success message after 2 seconds
+      setTimeout(() => {
+        setSuccessMessage("");
+      }, 2000);
+
+    } catch (err) {
+      console.error("Mark attendance error:", err);
+      setActionError(typeof err === "string" ? err : "Failed to mark attendance");
+      
+      // Revert optimistic update on error
+      setAttendanceChanges((prev) => {
+        const updated = { ...prev };
+        delete updated[studentId];
+        return updated;
+      });
+    }
   };
 
   // Get current status for a student (from changes or existing)
@@ -102,10 +142,10 @@ function Attendance() {
       : student.attendanceStatus;
   };
 
-  // Handle save all changes
+  // Handle save all changes - Keep for batch operations
   const handleSaveAll = async () => {
     if (Object.keys(attendanceChanges).length === 0) {
-      setActionError("No changes to save");
+      setActionError("No pending changes to save");
       return;
     }
 
@@ -130,7 +170,8 @@ function Attendance() {
       // Refresh the list
       setTimeout(() => {
         dispatch(fetchStudentsForAttendance());
-      }, 1000);
+        setSuccessMessage("");
+      }, 2000);
     } catch (err) {
       console.error("Save attendance error:", err);
       setActionError(typeof err === "string" ? err : "Failed to save attendance");
@@ -139,15 +180,37 @@ function Attendance() {
     }
   };
 
-  // Handle mark all as status
-  const handleMarkAll = (status) => {
-    const newChanges = {};
-    filteredStudents.forEach((student) => {
-      newChanges[student._id] = status;
-    });
-    setAttendanceChanges(newChanges);
+  // Handle mark all as status - Saves immediately to database
+  const handleMarkAll = async (status) => {
+    setSaving(true);
     setActionError("");
     setSuccessMessage("");
+
+    try {
+      const promises = filteredStudents.map((student) => {
+        return dispatch(markAttendanceThunk({ 
+          studentId: student._id, 
+          status, 
+          date: new Date().toISOString() 
+        })).unwrap();
+      });
+
+      await Promise.all(promises);
+      
+      setSuccessMessage(`Successfully marked all students as ${status}`);
+      setAttendanceChanges({});
+      
+      // Refresh the list
+      setTimeout(() => {
+        dispatch(fetchStudentsForAttendance());
+        setSuccessMessage("");
+      }, 2000);
+    } catch (err) {
+      console.error("Mark all error:", err);
+      setActionError(typeof err === "string" ? err : "Failed to mark attendance for all students");
+    } finally {
+      setSaving(false);
+    }
   };
 
   const handleViewHistory = (student) => {
@@ -178,7 +241,7 @@ function Attendance() {
           <div>
             <h2 className="text-xl font-semibold text-text">Today's Attendance</h2>
             <p className="mt-1 text-sm text-text-muted">
-              Mark attendance for all students directly in the table below.
+              Mark attendance for students. Changes are saved automatically.
             </p>
           </div>
 
@@ -186,25 +249,26 @@ function Attendance() {
             <button
               type="button"
               onClick={() => handleMarkAll("Present")}
-              className="inline-flex items-center justify-center gap-2 rounded-lg bg-green-600 px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-green-700"
+              disabled={saving}
+              className="inline-flex items-center justify-center gap-2 rounded-lg bg-green-600 px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-green-700 disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              Mark All Present
+              {saving ? "Saving..." : "Mark All Present"}
             </button>
             <button
               type="button"
               onClick={() => handleMarkAll("Absent")}
-              className="inline-flex items-center justify-center gap-2 rounded-lg bg-red-600 px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-red-700"
+              disabled={saving}
+              className="inline-flex items-center justify-center gap-2 rounded-lg bg-red-600 px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-red-700 disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              Mark All Absent
+              {saving ? "Saving..." : "Mark All Absent"}
             </button>
             <button
               type="button"
-              onClick={handleSaveAll}
-              disabled={saving || Object.keys(attendanceChanges).length === 0}
-              className="inline-flex items-center justify-center gap-2 rounded-lg bg-primary px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-primary/90 disabled:opacity-50 disabled:cursor-not-allowed"
+              onClick={() => dispatch(fetchStudentsForAttendance())}
+              disabled={studentsLoading}
+              className="inline-flex items-center justify-center gap-2 rounded-lg border border-border bg-surface px-4 py-2.5 text-sm font-semibold text-text transition hover:bg-background disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              <Save className="h-4 w-4" />
-              {saving ? "Saving..." : `Save Changes${Object.keys(attendanceChanges).length > 0 ? ` (${Object.keys(attendanceChanges).length})` : ""}`}
+              {studentsLoading ? "Refreshing..." : "Refresh"}
             </button>
           </div>
         </div>
@@ -280,14 +344,11 @@ function Attendance() {
                 <tbody>
                   {filteredStudents.map((student) => {
                     const currentStatus = getCurrentStatus(student);
-                    const hasChanges = attendanceChanges[student._id] !== undefined;
                     
                     return (
                       <tr
                         key={student._id}
-                        className={`border-b border-border last:border-b-0 hover:bg-background ${
-                          hasChanges ? "bg-blue-50/50" : ""
-                        }`}
+                        className="border-b border-border last:border-b-0 hover:bg-background"
                       >
                         <td className="px-4 py-3 text-sm">
                           <span className="font-mono font-semibold text-primary">

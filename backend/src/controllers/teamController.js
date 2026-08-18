@@ -211,12 +211,134 @@ const deleteProject = asyncHandler(async (req, res) => {
   res.json({ success: true, message: "Project deleted" });
 });
 
+// Add member to team
+const addMember = asyncHandler(async (req, res) => {
+  const { studentId } = req.body;
+  const teamId = req.params.id;
+
+  if (!studentId) {
+    return res.status(400).json({ success: false, message: "Student ID is required" });
+  }
+
+  const team = await Team.findById(teamId);
+  if (!team) {
+    return res.status(404).json({ success: false, message: "Team not found" });
+  }
+
+  const student = await Student.findById(studentId);
+  if (!student) {
+    return res.status(404).json({ success: false, message: "Student not found" });
+  }
+
+  // Assign student to team
+  student.team = teamId;
+  await student.save();
+
+  // Fetch updated team data
+  const members = await Student.find({ team: teamId }).select("rollNumber name course batch");
+  const leader = members[0] || null;
+
+  res.json({
+    success: true,
+    data: {
+      ...team.toObject(),
+      members,
+      memberCount: members.length,
+      leaderName: leader ? leader.name : "Not Assigned",
+      leaderId: leader ? leader._id : null
+    }
+  });
+});
+
+// Remove member from team
+const removeMember = asyncHandler(async (req, res) => {
+  const { studentId } = req.params;
+  const teamId = req.params.id;
+
+  const team = await Team.findById(teamId);
+  if (!team) {
+    return res.status(404).json({ success: false, message: "Team not found" });
+  }
+
+  const student = await Student.findById(studentId);
+  if (!student) {
+    return res.status(404).json({ success: false, message: "Student not found" });
+  }
+
+  // Remove student from team
+  student.team = null;
+  await student.save();
+
+  // Fetch updated team data
+  const members = await Student.find({ team: teamId }).select("rollNumber name course batch");
+  const leader = members[0] || null;
+
+  res.json({
+    success: true,
+    data: {
+      ...team.toObject(),
+      members,
+      memberCount: members.length,
+      leaderName: leader ? leader.name : "Not Assigned",
+      leaderId: leader ? leader._id : null
+    }
+  });
+});
+
+// Change team leader
+const changeLeader = asyncHandler(async (req, res) => {
+  const { leaderId } = req.body;
+  const teamId = req.params.id;
+
+  if (!leaderId) {
+    return res.status(400).json({ success: false, message: "Leader ID is required" });
+  }
+
+  const team = await Team.findById(teamId);
+  if (!team) {
+    return res.status(404).json({ success: false, message: "Team not found" });
+  }
+
+  const leader = await Student.findById(leaderId);
+  if (!leader) {
+    return res.status(404).json({ success: false, message: "Student not found" });
+  }
+
+  if (leader.team?.toString() !== teamId) {
+    return res.status(400).json({ 
+      success: false, 
+      message: "Selected student is not a member of this team" 
+    });
+  }
+
+  // Get all members and reorder so leader is first
+  const allMembers = await Student.find({ team: teamId }).select("rollNumber name course batch");
+  const members = [
+    leader,
+    ...allMembers.filter((m) => m._id.toString() !== leaderId)
+  ];
+
+  res.json({
+    success: true,
+    data: {
+      ...team.toObject(),
+      members,
+      memberCount: members.length,
+      leaderName: leader.name,
+      leaderId: leader._id
+    }
+  });
+});
+
 module.exports = {
   listTeams,
   getTeam,
   createTeam,
   updateTeam,
   deleteTeam,
+  addMember,
+  removeMember,
+  changeLeader,
   createProject,
   listProjects,
   getProject,
