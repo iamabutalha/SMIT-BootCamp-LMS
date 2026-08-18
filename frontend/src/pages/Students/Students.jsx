@@ -42,12 +42,16 @@ function Students() {
     }
 
     return (students || []).filter((student) => {
+      const teamName = typeof student.team === "object" && student.team?.name
+        ? student.team.name
+        : (typeof student.team === "string" ? student.team : "");
+
       return (
         student.rollNumber?.toLowerCase().includes(searchValue) ||
         student.name?.toLowerCase().includes(searchValue) ||
         student.course?.toLowerCase().includes(searchValue) ||
         student.batch?.toLowerCase().includes(searchValue) ||
-        student.team?.toLowerCase().includes(searchValue)
+        teamName.toLowerCase().includes(searchValue)
       );
     });
   }, [students, search]);

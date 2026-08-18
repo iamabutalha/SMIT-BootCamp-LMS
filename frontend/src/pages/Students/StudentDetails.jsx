@@ -13,9 +13,15 @@ import MainLayout from "../../components/layout/MainLayout";
 // ============================================================
 
 function StudentDetails({ student, onBack }) {
-  // ==========================================================
-  // UI
-  // ==========================================================
+  const studentName = typeof student?.name === "string" ? student.name : "Unknown Student";
+  const studentRoll = typeof student?.rollNumber === "string" ? student.rollNumber : "-";
+  const studentCourse = typeof student?.course === "string" ? student.course : "-";
+  const studentBatch = typeof student?.batch === "string" ? student.batch : "-";
+  const studentTeam = student?.team && typeof student.team === "object"
+    ? (typeof student.team.name === "string" ? student.team.name : "No Team")
+    : (typeof student?.team === "string" ? student.team : "No Team");
+
+  console.log("StudentDetails student:", student);
 
   return (
     <MainLayout
@@ -77,18 +83,18 @@ function StudentDetails({ student, onBack }) {
                 text-white
               "
             >
-              {student.name.charAt(0).toUpperCase()}
+              {studentName.charAt(0).toUpperCase()}
             </div>
 
             {/* Student Name */}
 
             <div>
               <h2 className="text-2xl font-bold text-text">
-                {student.name}
+                {studentName}
               </h2>
 
               <p className="mt-1 text-sm text-text-muted">
-                Roll Number: {student.rollNumber}
+                 Roll Number: {studentRoll}
               </p>
             </div>
           </div>
@@ -108,22 +114,22 @@ function StudentDetails({ student, onBack }) {
         >
           <InfoCard
             label="Roll Number"
-            value={student.rollNumber}
+            value={studentRoll}
           />
 
           <InfoCard
             label="Course"
-            value={student.course}
+            value={studentCourse}
           />
 
           <InfoCard
             label="Batch"
-            value={student.batch}
+            value={studentBatch}
           />
 
           <InfoCard
             label="Team"
-            value={student.team}
+            value={studentTeam}
           />
         </div>
 
@@ -168,6 +174,8 @@ function StudentDetails({ student, onBack }) {
 // ============================================================
 
 function InfoCard({ label, value }) {
+  const displayValue = value == null ? "-" : String(value);
+
   return (
     <div
       className="
@@ -183,7 +191,7 @@ function InfoCard({ label, value }) {
       </p>
 
       <p className="mt-2 text-sm font-semibold text-text">
-        {value}
+        {displayValue}
       </p>
     </div>
   );

@@ -135,7 +135,7 @@ function Dashboard() {
                   <div className="divide-y divide-border p-4">
                     {todayAttendance.map((record) => (
                       <div key={record.id} className="flex justify-between py-3">
-                        <span className="text-sm font-medium text-text">{record.studentName}</span>
+                        <span className="text-sm font-medium text-text">{record.student?.name || "Unknown Student"}</span>
                         <span className="text-xs font-semibold text-success">{record.status}</span>
                       </div>
                     ))}

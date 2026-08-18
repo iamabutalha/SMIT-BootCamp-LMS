@@ -95,7 +95,9 @@ function StudentCard({
           </span>
 
           <span className="text-sm font-medium text-text">
-            {student.team}
+            {typeof student.team === "object" && student.team?.name
+              ? student.team.name
+              : student.team || "-"}
           </span>
         </div>
 
