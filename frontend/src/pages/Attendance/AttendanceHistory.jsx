@@ -1,38 +1,9 @@
+import { useEffect, useState } from "react";
 import MainLayout from "../../components/layout/MainLayout";
 import AttendanceSummary from "./components/AttendanceSummary";
-
-// ============================================================
-// Demo Attendance History
-// Later this data will come from backend API.
-// ============================================================
-
-const attendanceHistory = [
-  {
-    date: "27 July 2026",
-    day: "Monday",
-    status: "Present",
-  },
-  {
-    date: "28 July 2026",
-    day: "Tuesday",
-    status: "Present",
-  },
-  {
-    date: "29 July 2026",
-    day: "Wednesday",
-    status: "Absent",
-  },
-  {
-    date: "30 July 2026",
-    day: "Thursday",
-    status: "Present",
-  },
-  {
-    date: "31 July 2026",
-    day: "Friday",
-    status: "Leave",
-  },
-];
+import LoadingState from "../../components/common/LoadingState";
+import ErrorState from "../../components/common/ErrorState";
+import attendanceService from "../../services/attendanceService";
 
 // ============================================================
 // Attendance History Component
@@ -42,23 +13,49 @@ function AttendanceHistory({
   student,
   onBack,
 }) {
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+  const [historyData, setHistoryData] = useState(null);
+
   // ==========================================================
-  // Calculate Attendance Summary
+  // Fetch Attendance History
   // ==========================================================
 
-  const totalDays = attendanceHistory.length;
+  useEffect(() => {
+    const fetchHistory = async () => {
+      try {
+        setLoading(true);
+        setError(null);
+        const studentId = student._id || student.id;
+        const data = await attendanceService.getStudentHistory(studentId);
+        setHistoryData(data);
+      } catch (err) {
+        console.error("Error fetching attendance history:", err);
+        setError(err.response?.data?.message || err.message || "Failed to load attendance history");
+      } finally {
+        setLoading(false);
+      }
+    };
 
-  const presentDays = attendanceHistory.filter(
-    (record) => record.status === "Present"
-  ).length;
+    if (student) {
+      fetchHistory();
+    }
+  }, [student]);
 
-  const absentDays = attendanceHistory.filter(
-    (record) => record.status === "Absent"
-  ).length;
+  // ==========================================================
+  // Extract data from response
+  // ==========================================================
 
-  const leaveDays = attendanceHistory.filter(
-    (record) => record.status === "Leave"
-  ).length;
+  const attendanceHistory = historyData?.records || [];
+  const summary = historyData?.summary || {
+    totalDays: 0,
+    present: 0,
+    absent: 0,
+    leave: 0,
+    attendancePercentage: 0
+  };
+
+  const studentInfo = historyData?.student || student;
 
   // ==========================================================
   // Status Badge Class
@@ -81,13 +78,63 @@ function AttendanceHistory({
   };
 
   // ==========================================================
+  // Helper function to format date
+  // ==========================================================
+
+  const formatDate = (dateString) => {
+    const date = new Date(dateString);
+    const options = { day: 'numeric', month: 'long', year: 'numeric' };
+    return date.toLocaleDateString('en-US', options);
+  };
+
+  const formatDay = (dateString) => {
+    const date = new Date(dateString);
+    const options = { weekday: 'long' };
+    return date.toLocaleDateString('en-US', options);
+  };
+
+  // ==========================================================
   // Render
   // ==========================================================
+
+  if (loading) {
+    return (
+      <MainLayout
+        title="Attendance History"
+        subtitle={`Loading attendance record...`}
+      >
+        <LoadingState message="Loading attendance history..." />
+      </MainLayout>
+    );
+  }
+
+  if (error) {
+    return (
+      <MainLayout
+        title="Attendance History"
+        subtitle="Failed to load attendance history"
+      >
+        <ErrorState
+          title="Failed to load attendance history"
+          message={error}
+          action={
+            <button
+              type="button"
+              onClick={onBack}
+              className="inline-flex items-center gap-2 text-sm font-medium text-primary hover:underline"
+            >
+              ← Back to Attendance
+            </button>
+          }
+        />
+      </MainLayout>
+    );
+  }
 
   return (
     <MainLayout
       title="Attendance History"
-      subtitle={`Attendance record of ${student.name}`}
+      subtitle={`Attendance record of ${studentInfo.name}`}
     >
       <div className="space-y-6">
 
@@ -150,22 +197,22 @@ function AttendanceHistory({
                 text-white
               "
             >
-              {student.name?.charAt(0)?.toUpperCase()}
+              {studentInfo.name?.charAt(0)?.toUpperCase()}
             </div>
 
             {/* Student Details */}
 
             <div>
               <h2 className="text-xl font-semibold text-text">
-                {student.name}
+                {studentInfo.name}
               </h2>
 
               <p className="mt-1 text-sm text-text-muted">
-                Roll Number: {student.rollNumber}
+                Roll Number: {studentInfo.rollNumber}
               </p>
 
               <p className="mt-1 text-sm text-text-muted">
-                {student.course} • {student.batch}
+                {studentInfo.course} • {studentInfo.batch}
               </p>
             </div>
           </div>
@@ -176,10 +223,10 @@ function AttendanceHistory({
         ==================================================== */}
 
         <AttendanceSummary
-          totalDays={totalDays}
-          presentDays={presentDays}
-          absentDays={absentDays}
-          leaveDays={leaveDays}
+          totalDays={summary.totalDays}
+          presentDays={summary.present}
+          absentDays={summary.absent}
+          leaveDays={summary.leave}
         />
 
         {/* ====================================================
@@ -191,137 +238,145 @@ function AttendanceHistory({
             Attendance History
           </h2>
 
-          <div
-            className="
-              w-full
-              overflow-hidden
-              rounded-xl
-              border
-              border-border
-              bg-surface
-            "
-          >
-            <div className="overflow-x-auto">
+          {attendanceHistory.length === 0 ? (
+            <div className="rounded-xl border border-border bg-surface p-8 text-center">
+              <p className="text-text-muted">
+                No attendance records found for this student.
+              </p>
+            </div>
+          ) : (
+            <div
+              className="
+                w-full
+                overflow-hidden
+                rounded-xl
+                border
+                border-border
+                bg-surface
+              "
+            >
+              <div className="overflow-x-auto">
 
-              <table
-                className="
-                  w-full
-                  min-w-[600px]
-                  border-collapse
-                  text-left
-                "
-              >
+                <table
+                  className="
+                    w-full
+                    min-w-[600px]
+                    border-collapse
+                    text-left
+                  "
+                >
 
-                {/* ==========================================
-                    Table Header
-                ========================================== */}
+                  {/* ==========================================
+                      Table Header
+                  ========================================== */}
 
-                <thead>
-                  <tr className="border-b border-border bg-background">
+                  <thead>
+                    <tr className="border-b border-border bg-background">
 
-                    <th
-                      className="
-                        px-4
-                        py-3
-                        text-xs
-                        font-semibold
-                        uppercase
-                        tracking-wide
-                        text-text-muted
-                      "
-                    >
-                      Date
-                    </th>
+                      <th
+                        className="
+                          px-4
+                          py-3
+                          text-xs
+                          font-semibold
+                          uppercase
+                          tracking-wide
+                          text-text-muted
+                        "
+                      >
+                        Date
+                      </th>
 
-                    <th
-                      className="
-                        px-4
-                        py-3
-                        text-xs
-                        font-semibold
-                        uppercase
-                        tracking-wide
-                        text-text-muted
-                      "
-                    >
-                      Day
-                    </th>
+                      <th
+                        className="
+                          px-4
+                          py-3
+                          text-xs
+                          font-semibold
+                          uppercase
+                          tracking-wide
+                          text-text-muted
+                        "
+                      >
+                        Day
+                      </th>
 
-                    <th
-                      className="
-                        px-4
-                        py-3
-                        text-xs
-                        font-semibold
-                        uppercase
-                        tracking-wide
-                        text-text-muted
-                      "
-                    >
-                      Status
-                    </th>
-
-                  </tr>
-                </thead>
-
-                {/* ==========================================
-                    Table Body
-                ========================================== */}
-
-                <tbody>
-
-                  {attendanceHistory.map((record, index) => (
-                    <tr
-                      key={`${record.date}-${index}`}
-                      className="
-                        border-b
-                        border-border
-                        last:border-b-0
-                        hover:bg-background
-                      "
-                    >
-
-                      {/* Date */}
-
-                      <td className="px-4 py-3 text-sm text-text">
-                        {record.date}
-                      </td>
-
-                      {/* Day */}
-
-                      <td className="px-4 py-3 text-sm text-text">
-                        {record.day}
-                      </td>
-
-                      {/* Status */}
-
-                      <td className="px-4 py-3">
-
-                        <span
-                          className={`
-                            inline-flex
-                            rounded-full
-                            px-3
-                            py-1
-                            text-xs
-                            font-semibold
-                            ${getStatusClass(record.status)}
-                          `}
-                        >
-                          {record.status}
-                        </span>
-
-                      </td>
+                      <th
+                        className="
+                          px-4
+                          py-3
+                          text-xs
+                          font-semibold
+                          uppercase
+                          tracking-wide
+                          text-text-muted
+                        "
+                      >
+                        Status
+                      </th>
 
                     </tr>
-                  ))}
+                  </thead>
 
-                </tbody>
+                  {/* ==========================================
+                      Table Body
+                  ========================================== */}
 
-              </table>
+                  <tbody>
 
+                    {attendanceHistory.map((record, index) => (
+                      <tr
+                        key={record._id || index}
+                        className="
+                          border-b
+                          border-border
+                          last:border-b-0
+                          hover:bg-background
+                        "
+                      >
+
+                        {/* Date */}
+
+                        <td className="px-4 py-3 text-sm text-text">
+                          {formatDate(record.date)}
+                        </td>
+
+                        {/* Day */}
+
+                        <td className="px-4 py-3 text-sm text-text">
+                          {formatDay(record.date)}
+                        </td>
+
+                        {/* Status */}
+
+                        <td className="px-4 py-3">
+
+                          <span
+                            className={`
+                              inline-flex
+                              rounded-full
+                              px-3
+                              py-1
+                              text-xs
+                              font-semibold
+                              ${getStatusClass(record.status)}
+                            `}
+                          >
+                            {record.status}
+                          </span>
+
+                        </td>
+
+                      </tr>
+                    ))}
+
+                  </tbody>
+
+                </table>
+
+              </div>
             </div>
-          </div>
+          )}
         </div>
 
       </div>

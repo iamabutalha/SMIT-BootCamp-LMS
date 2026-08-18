@@ -21,9 +21,9 @@ const attendanceService = {
     return response.data?.data || response.data;
   },
 
-  // Get attendance for a specific student
-  getStudentAttendance: async (studentId) => {
-    const response = await apiClient.get(`/attendance/student/${studentId}`);
+  // Get attendance history for a specific student
+  getStudentHistory: async (studentId) => {
+    const response = await apiClient.get(`/attendance/student/${studentId}/history`);
     return response.data?.data || response.data;
   },
 
