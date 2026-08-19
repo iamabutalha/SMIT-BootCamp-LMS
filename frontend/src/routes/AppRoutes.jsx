@@ -13,10 +13,10 @@ import PublicRoute from "../components/auth/PublicRoute";
 
 import Login from "../pages/auth/Login";
 import Dashboard from "../pages/dashboard/Dashboard";
-import Attendance from "../pages/attendance/Attendance";
-import Students from "../pages/students/Students";
-import Tasks from "../pages/tasks/Tasks";
-import Teams from "../pages/teams/Teams";
+import Attendance from "../pages/Attendance/Attendance";
+import Students from "../pages/Students/Students";
+import Tasks from "../pages/Tasks/Tasks";
+import Teams from "../pages/Teams/Teams";
 import Courses from "../pages/courses/Courses";
 import Settings from "../pages/settings/Settings";
 
