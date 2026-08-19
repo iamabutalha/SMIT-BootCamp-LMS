@@ -1,6 +1,6 @@
 const express = require("express");
 const cors = require("cors");
-const { corsOrigin } = require("./config/env");
+const { corsOrigins } = require("./config/env");
 
 const authRoutes = require("./routes/authRoutes");
 const dashboardRoutes = require("./routes/dashboardRoutes");
@@ -19,9 +19,10 @@ const app = express();
 
 app.use(
   cors({
-    origin: corsOrigin,
-    credentials: true
-  })
+    origin: "*",
+
+    credentials: true,
+  }),
 );
 
 app.use(express.json({ limit: "1mb" }));
@@ -30,7 +31,7 @@ app.use(express.urlencoded({ extended: true }));
 app.get("/api/health", (req, res) => {
   res.json({
     success: true,
-    message: "Bootcamp LMS API is running"
+    message: "Bootcamp LMS API is running",
   });
 });
 

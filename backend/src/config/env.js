@@ -10,11 +10,24 @@ for (const key of required) {
   }
 }
 
+const defaultCorsOrigins = [
+  "http://localhost:5173",
+  "https://lms-frontend-gamma-tan.vercel.app",
+];
+
+const corsOrigins = [
+  ...defaultCorsOrigins,
+  ...(process.env.CLIENT_URL || "")
+    .split(",")
+    .map((origin) => origin.trim())
+    .filter(Boolean),
+];
+
 module.exports = {
   nodeEnv: process.env.NODE_ENV || "development",
   port: Number(process.env.PORT) || 5000,
   mongoUri: process.env.MONGODB_URI,
   jwtSecret: process.env.JWT_SECRET,
   jwtExpiresIn: process.env.JWT_EXPIRES_IN || "1d",
-  corsOrigin: process.env.CLIENT_URL || "https://smit-boot-camp-lms.vercel.app",
+  corsOrigins,
 };
