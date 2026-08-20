@@ -17,8 +17,8 @@ const getDashboard = asyncHandler(async (req, res) => {
     absentStudents,
     totalTeams,
     pendingTasks,
-    todayAttendance,
-    todayTasks,
+    attendanceForToday,
+    allTasks,
     recentStudents,
     recentTeams
   ] = await Promise.all([
@@ -34,14 +34,36 @@ const getDashboard = asyncHandler(async (req, res) => {
     Team.countDocuments(),
     Task.countDocuments({ status: "Pending" }),
     Attendance.find({ date: { $gte: today, $lt: tomorrow } })
-      .populate("student", "rollNumber name")
-      .sort({ createdAt: -1 }),
-    Task.find({ dueDate: { $gte: today, $lt: tomorrow } })
-      .populate("student", "rollNumber name")
-      .sort({ createdAt: -1 }),
+      .populate({
+        path: "student",
+        select: "rollNumber name course batch team",
+        populate: { path: "team", select: "name" }
+      })
+      .sort({ updatedAt: -1, createdAt: -1 }),
+    Task.find()
+      .populate({
+        path: "student",
+        select: "rollNumber name course batch team",
+        populate: { path: "team", select: "name" }
+      })
+      .sort({ updatedAt: -1, createdAt: -1 })
+      .limit(15),
     Student.find().sort({ createdAt: -1 }).limit(5),
     Team.find().populate("project").sort({ createdAt: -1 }).limit(5)
   ]);
+
+  // If no attendance marked specifically for today, fetch recent attendance records from DB
+  let todayAttendance = attendanceForToday;
+  if (!todayAttendance || todayAttendance.length === 0) {
+    todayAttendance = await Attendance.find()
+      .populate({
+        path: "student",
+        select: "rollNumber name course batch team",
+        populate: { path: "team", select: "name" }
+      })
+      .sort({ updatedAt: -1, date: -1 })
+      .limit(15);
+  }
 
   res.json({
     success: true,
@@ -54,7 +76,7 @@ const getDashboard = asyncHandler(async (req, res) => {
         pendingTasks
       },
       todayAttendance,
-      todayTasks,
+      todayTasks: allTasks,
       recentStudents,
       recentTeams
     }

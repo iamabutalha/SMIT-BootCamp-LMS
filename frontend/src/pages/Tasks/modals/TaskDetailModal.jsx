@@ -2,6 +2,7 @@ import Modal from "../../../components/ui/Modal";
 import Badge from "../../../components/ui/Badge";
 import Button from "../../../components/ui/Button";
 import { Calendar, User, Hash, Clock, FileText } from "lucide-react";
+import { formatDMY } from "../../../utils/dateUtils";
 
 const getStatusBadgeVariant = (status) => {
   switch (status) {
@@ -106,7 +107,7 @@ function TaskDetailModal({
               <span>Due Date</span>
             </div>
             <p className="text-sm font-semibold text-text">
-              {task.dueDate}
+              {formatDMY(task.dueDate)}
             </p>
           </div>
 

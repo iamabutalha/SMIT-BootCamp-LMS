@@ -96,8 +96,9 @@ const updateStudentMarkingStatus = (students, record) => {
   const studentId = getStudentIdFromRecord(record);
   if (!studentId) return;
 
+  const targetId = String(studentId);
   const index = students.findIndex(
-    (student) => student._id === studentId || student.id === studentId
+    (student) => String(student._id || student.id) === targetId
   );
 
   if (index === -1) return;

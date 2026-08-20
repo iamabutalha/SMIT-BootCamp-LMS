@@ -1,4 +1,20 @@
 import apiClient from "./apiClient";
+import { formatDMY } from "../utils/dateUtils";
+
+// ============================================================
+// Helper to sanitize & format task object from API
+// ============================================================
+const cleanTask = (task) => {
+  if (!task) return task;
+  return {
+    ...task,
+    id: task._id || task.id,
+    studentId: task.student?._id || task.student,
+    studentName: task.student?.name || task.studentName,
+    rollNumber: task.student?.rollNumber || task.rollNumber,
+    dueDate: formatDMY(task.dueDate),
+  };
+};
 
 // ============================================================
 // Task Service - All operations fetch from database
@@ -10,7 +26,6 @@ const taskService = {
     const response = await apiClient.get("/students");
     const students = response.data?.data || response.data || [];
     
-    // Map MongoDB _id to id for frontend compatibility
     return students.map(student => ({
       ...student,
       id: student._id || student.id
@@ -21,37 +36,18 @@ const taskService = {
   getTasks: async (filters = {}) => {
     const response = await apiClient.get("/tasks", { params: filters });
     const tasks = response.data?.data || response.data || [];
-    
-    // Map MongoDB _id to id for frontend compatibility
-    return tasks.map(task => ({
-      ...task,
-      id: task._id || task.id,
-      studentId: task.student?._id || task.student,
-      studentName: task.student?.name || task.studentName,
-      rollNumber: task.student?.rollNumber || task.rollNumber
-    }));
+    return tasks.map(cleanTask);
   },
 
   // Get single task by ID
   getTaskById: async (id) => {
     const response = await apiClient.get(`/tasks/${id}`);
     const task = response.data?.data || response.data;
-    
-    // Map MongoDB _id to id for frontend compatibility
-    return {
-      ...task,
-      id: task._id || task.id,
-      studentId: task.student?._id || task.student,
-      studentName: task.student?.name || task.studentName,
-      rollNumber: task.student?.rollNumber || task.rollNumber
-    };
+    return cleanTask(task);
   },
 
   // Create new task
   createTask: async (taskPayload) => {
-    console.log("Task service - Creating task with payload:", taskPayload);
-    
-    // Map studentId to student (backend expects 'student' field)
     const payload = {
       student: taskPayload.studentId || taskPayload.student,
       title: taskPayload.title,
@@ -60,81 +56,29 @@ const taskService = {
       status: taskPayload.status || "Pending"
     };
     
-    console.log("Task service - Transformed payload:", payload);
-    
-    try {
-      const response = await apiClient.post("/tasks", payload);
-      console.log("Task service - Response:", response.data);
-      
-      const task = response.data?.data || response.data;
-      
-      // Map MongoDB _id to id for frontend compatibility
-      return {
-        ...task,
-        id: task._id || task.id,
-        studentId: task.student?._id || task.student,
-        studentName: task.student?.name || task.studentName,
-        rollNumber: task.student?.rollNumber || task.rollNumber
-      };
-    } catch (error) {
-      console.error("Task service - Error:", error.response?.data || error.message);
-      throw error;
-    }
+    const response = await apiClient.post("/tasks", payload);
+    const task = response.data?.data || response.data;
+    return cleanTask(task);
   },
 
   // Update existing task
   updateTask: async (id, taskPayload) => {
-    console.log("Task service - Updating task:", { id, taskPayload });
-    
-    // Map studentId to student (backend expects 'student' field)
     const payload = {
       ...taskPayload,
       student: taskPayload.studentId || taskPayload.student
     };
-    
-    // Remove studentId if it exists (backend doesn't need it)
     delete payload.studentId;
     
-    console.log("Task service - Update payload:", payload);
-    
     const response = await apiClient.put(`/tasks/${id}`, payload);
-    console.log("Task service - Update response:", response.data);
-    
     const task = response.data?.data || response.data;
-    
-    // Map MongoDB _id to id for frontend compatibility
-    const mappedTask = {
-      ...task,
-      id: task._id || task.id,
-      studentId: task.student?._id || task.student,
-      studentName: task.student?.name || task.studentName,
-      rollNumber: task.student?.rollNumber || task.rollNumber
-    };
-    
-    console.log("Task service - Mapped updated task:", mappedTask);
-    return mappedTask;
+    return cleanTask(task);
   },
 
   // Quick status change
   updateTaskStatus: async (id, status) => {
-    console.log("Task service - Updating task status:", { id, status });
-    
     const response = await apiClient.put(`/tasks/${id}`, { status });
-    console.log("Task service - Status update response:", response.data);
-    
     const task = response.data?.data || response.data;
-    
-    // Map MongoDB _id to id for frontend compatibility
-    const mappedTask = {
-      ...task,
-      id: task._id || task.id,
-      studentId: task.student?._id || task.student,
-      studentName: task.student?.name || task.studentName,
-      rollNumber: task.student?.rollNumber || task.rollNumber
-    };
-    
-    console.log("Task service - Mapped task:", mappedTask);
-    return mappedTask;
+    return cleanTask(task);
   },
 
   // Delete task
@@ -146,7 +90,11 @@ const taskService = {
   // Get student task history
   getStudentHistory: async (studentId) => {
     const response = await apiClient.get(`/tasks/student/${studentId}/history`);
-    return response.data?.data || response.data;
+    const historyData = response.data?.data || response.data;
+    if (historyData && Array.isArray(historyData.tasks)) {
+      historyData.tasks = historyData.tasks.map(cleanTask);
+    }
+    return historyData;
   },
 };
 
