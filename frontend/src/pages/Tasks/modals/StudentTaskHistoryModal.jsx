@@ -7,7 +7,7 @@ import Input from "../../../components/ui/Input";
 import Button from "../../../components/ui/Button";
 import LoadingState from "../../../components/common/LoadingState";
 import taskService from "../../../services/taskService";
-import { Calendar, User, Hash } from "lucide-react";
+import { formatDMY } from "../../../utils/dateUtils";
 
 const getStatusBadgeVariant = (status) => {
   switch (status) {
@@ -88,7 +88,7 @@ function StudentTaskHistoryModal({
       label: "Due Date",
       render: (row) => (
         <span className="text-xs text-text-muted font-medium">
-          {row.dueDate}
+          {formatDMY(row.dueDate)}
         </span>
       ),
     },

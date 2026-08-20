@@ -3,6 +3,7 @@ import {
   CalendarCheck,
   ClipboardList,
   Users,
+  Trash2,
 } from "lucide-react";
 
 import MainLayout from "../../components/layout/MainLayout";
@@ -12,7 +13,7 @@ import MainLayout from "../../components/layout/MainLayout";
 // Displays the complete profile of a selected student.
 // ============================================================
 
-function StudentDetails({ student, onBack }) {
+function StudentDetails({ student, onBack, onDelete }) {
   const studentName = typeof student?.name === "string" ? student.name : "Unknown Student";
   const studentRoll = typeof student?.rollNumber === "string" ? student.rollNumber : "-";
   const studentCourse = typeof student?.course === "string" ? student.course : "-";
@@ -21,8 +22,6 @@ function StudentDetails({ student, onBack }) {
     ? (typeof student.team.name === "string" ? student.team.name : "No Team")
     : (typeof student?.team === "string" ? student.team : "No Team");
 
-  console.log("StudentDetails student:", student);
-
   return (
     <MainLayout
       title="Student Details"
@@ -30,26 +29,46 @@ function StudentDetails({ student, onBack }) {
     >
       <div className="space-y-6">
 
-        {/* ==================================================
-            Back Button
-        ================================================== */}
+        {/* Top Header Bar: Back & Delete Action */}
+        <div className="flex items-center justify-between">
+          <button
+            type="button"
+            onClick={onBack}
+            className="
+              inline-flex
+              items-center
+              gap-2
+              text-sm
+              font-medium
+              text-primary
+              hover:underline
+            "
+          >
+            <ArrowLeft className="h-4 w-4" />
+            Back to Students
+          </button>
 
-        <button
-          type="button"
-          onClick={onBack}
-          className="
-            inline-flex
-            items-center
-            gap-2
-            text-sm
-            font-medium
-            text-primary
-            hover:underline
-          "
-        >
-          <ArrowLeft className="h-4 w-4" />
-          Back to Students
-        </button>
+          {onDelete && (
+            <button
+              type="button"
+              onClick={() => {
+                if (
+                  window.confirm(
+                    `Are you sure you want to delete student "${studentName}" (${studentRoll})? This will also remove their attendance and assigned tasks.`
+                  )
+                ) {
+                  onDelete(student);
+                  onBack();
+                }
+              }}
+              className="inline-flex items-center gap-1.5 rounded-lg bg-danger/10 px-3.5 py-2 text-xs font-semibold text-danger hover:bg-danger/20 transition"
+              title="Delete Student"
+            >
+              <Trash2 className="h-4 w-4" />
+              <span>Delete Student</span>
+            </button>
+          )}
+        </div>
 
         {/* ==================================================
             Student Profile Card

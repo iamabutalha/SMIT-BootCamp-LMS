@@ -116,6 +116,7 @@ function Students() {
       <StudentDetails
         student={selectedStudent}
         onBack={handleCloseDetails}
+        onDelete={handleDeleteStudent}
       />
     );
   }

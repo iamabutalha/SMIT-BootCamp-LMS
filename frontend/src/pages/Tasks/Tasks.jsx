@@ -46,6 +46,8 @@ import {
   ClipboardList,
 } from "lucide-react";
 
+import { formatDMY } from "../../utils/dateUtils";
+
 const getStatusBadgeVariant = (status) => {
   switch (status) {
     case "Completed":
@@ -174,7 +176,7 @@ function Tasks() {
       label: "Due Date",
       render: (row) => (
         <span className="text-xs font-medium text-text-muted">
-          {row.dueDate}
+          {formatDMY(row.dueDate)}
         </span>
       ),
     },

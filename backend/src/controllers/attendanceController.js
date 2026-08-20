@@ -97,20 +97,23 @@ const markAttendance = asyncHandler(async (req, res) => {
 
   try {
     const record = await Attendance.findOneAndUpdate(
-      { student: student._id, date: range.start },
+      { student: student._id, date: { $gte: range.start, $lt: range.end } },
       { student: student._id, date: range.start, status },
       { returnDocument: 'after', upsert: true, runValidators: true, setDefaultsOnInsert: true }
     ).populate("student", "rollNumber name course batch team");
 
     res.status(201).json({ success: true, data: record });
   } catch (error) {
-    // Handle duplicate key error
+    // Handle duplicate key error gracefully
     if (error.code === 11000) {
-      console.error("Duplicate key error:", error);
-      return res.status(409).json({
-        success: false,
-        message: "A record with the same unique value already exists"
-      });
+      console.error("Duplicate key error on attendance mark - retrying update:", error);
+      const fallbackRecord = await Attendance.findOneAndUpdate(
+        { student: student._id, date: { $gte: range.start, $lt: range.end } },
+        { status },
+        { new: true, runValidators: true }
+      ).populate("student", "rollNumber name course batch team");
+      
+      return res.status(200).json({ success: true, data: fallbackRecord });
     }
     throw error;
   }
@@ -201,15 +204,18 @@ const getStudentsForAttendance = asyncHandler(async (req, res) => {
   const attendanceRecords = await Attendance.find({
     student: { $in: studentIds },
     date: { $gte: range.start, $lt: range.end }
-  });
+  }).sort({ updatedAt: -1 });
 
   // Create a map of student ID to attendance status
   const attendanceMap = {};
   attendanceRecords.forEach(record => {
-    attendanceMap[record.student.toString()] = {
-      status: record.status,
-      _id: record._id
-    };
+    const sId = record.student.toString();
+    if (!attendanceMap[sId]) {
+      attendanceMap[sId] = {
+        status: record.status,
+        _id: record._id
+      };
+    }
   });
 
   // Combine student data with attendance status
