@@ -73,6 +73,42 @@ const initialState = {
   error: null,
 };
 
+const getStudentIdFromRecord = (record) => {
+  if (!record?.student) return null;
+  return typeof record.student === "object"
+    ? record.student._id || record.student.id
+    : record.student;
+};
+
+const upsertAttendanceRecord = (records, record) => {
+  const index = records.findIndex(
+    (item) => item._id === record._id || item.id === record.id
+  );
+
+  if (index !== -1) {
+    records[index] = record;
+  } else {
+    records.unshift(record);
+  }
+};
+
+const updateStudentMarkingStatus = (students, record) => {
+  const studentId = getStudentIdFromRecord(record);
+  if (!studentId) return;
+
+  const index = students.findIndex(
+    (student) => student._id === studentId || student.id === studentId
+  );
+
+  if (index === -1) return;
+
+  students[index] = {
+    ...students[index],
+    attendanceStatus: record.status,
+    attendanceId: record._id || record.id,
+  };
+};
+
 // ============================================================
 // Attendance Slice
 // ============================================================
@@ -154,23 +190,13 @@ const attendanceSlice = createSlice({
       })
       .addCase(markAttendanceThunk.fulfilled, (state, action) => {
         const record = action.payload;
-        const index = state.data.findIndex(
-          (a) => a._id === record._id || a.id === record.id
-        );
-        if (index !== -1) {
-          state.data[index] = record;
-        } else {
-          state.data.unshift(record);
-        }
+        upsertAttendanceRecord(state.data, record);
+        updateStudentMarkingStatus(state.studentsForMarking, record);
       })
       .addCase(updateAttendanceThunk.fulfilled, (state, action) => {
         const updated = action.payload;
-        const index = state.data.findIndex(
-          (a) => a._id === updated._id || a.id === updated.id
-        );
-        if (index !== -1) {
-          state.data[index] = updated;
-        }
+        upsertAttendanceRecord(state.data, updated);
+        updateStudentMarkingStatus(state.studentsForMarking, updated);
       });
   },
 });

@@ -24,7 +24,6 @@ function Attendance() {
   const [actionError, setActionError] = useState("");
   const [successMessage, setSuccessMessage] = useState("");
   const [attendanceChanges, setAttendanceChanges] = useState({});
-  const [saving, setSaving] = useState(false);
 
   useEffect(() => {
     dispatch(fetchStudentsForAttendance());
@@ -103,11 +102,6 @@ function Attendance() {
         date: new Date().toISOString() 
       })).unwrap();
 
-      // Update the local students list with the new status
-      const updatedStudents = studentsForMarking.map(s => 
-        s._id === studentId ? { ...s, attendanceStatus: status } : s
-      );
-      
       // Remove from pending changes since it's saved
       setAttendanceChanges((prev) => {
         const updated = { ...prev };
@@ -140,77 +134,6 @@ function Attendance() {
     return attendanceChanges[student._id] !== undefined 
       ? attendanceChanges[student._id] 
       : student.attendanceStatus;
-  };
-
-  // Handle save all changes - Keep for batch operations
-  const handleSaveAll = async () => {
-    if (Object.keys(attendanceChanges).length === 0) {
-      setActionError("No pending changes to save");
-      return;
-    }
-
-    setSaving(true);
-    setActionError("");
-    setSuccessMessage("");
-
-    try {
-      const promises = Object.entries(attendanceChanges).map(([studentId, status]) => {
-        return dispatch(markAttendanceThunk({ 
-          studentId, 
-          status, 
-          date: new Date().toISOString() 
-        })).unwrap();
-      });
-
-      await Promise.all(promises);
-      
-      setSuccessMessage(`Successfully saved attendance for ${Object.keys(attendanceChanges).length} student(s)`);
-      setAttendanceChanges({});
-      
-      // Refresh the list
-      setTimeout(() => {
-        dispatch(fetchStudentsForAttendance());
-        setSuccessMessage("");
-      }, 2000);
-    } catch (err) {
-      console.error("Save attendance error:", err);
-      setActionError(typeof err === "string" ? err : "Failed to save attendance");
-    } finally {
-      setSaving(false);
-    }
-  };
-
-  // Handle mark all as status - Saves immediately to database
-  const handleMarkAll = async (status) => {
-    setSaving(true);
-    setActionError("");
-    setSuccessMessage("");
-
-    try {
-      const promises = filteredStudents.map((student) => {
-        return dispatch(markAttendanceThunk({ 
-          studentId: student._id, 
-          status, 
-          date: new Date().toISOString() 
-        })).unwrap();
-      });
-
-      await Promise.all(promises);
-      
-      setSuccessMessage(`Successfully marked all students as ${status}`);
-      setAttendanceChanges({});
-      
-      // Refresh the list
-      setTimeout(() => {
-        dispatch(fetchStudentsForAttendance());
-        setSuccessMessage("");
-      }, 2000);
-    } catch (err) {
-      console.error("Mark all error:", err);
-      setActionError(typeof err === "string" ? err : "Failed to mark attendance for all students");
-    } finally {
-      setSaving(false);
-    }
   };
 
   const handleViewHistory = (student) => {
@@ -246,22 +169,6 @@ function Attendance() {
           </div>
 
           <div className="flex flex-wrap gap-2">
-            <button
-              type="button"
-              onClick={() => handleMarkAll("Present")}
-              disabled={saving}
-              className="inline-flex items-center justify-center gap-2 rounded-lg bg-green-600 px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-green-700 disabled:opacity-50 disabled:cursor-not-allowed"
-            >
-              {saving ? "Saving..." : "Mark All Present"}
-            </button>
-            <button
-              type="button"
-              onClick={() => handleMarkAll("Absent")}
-              disabled={saving}
-              className="inline-flex items-center justify-center gap-2 rounded-lg bg-red-600 px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-red-700 disabled:opacity-50 disabled:cursor-not-allowed"
-            >
-              {saving ? "Saving..." : "Mark All Absent"}
-            </button>
             <button
               type="button"
               onClick={() => dispatch(fetchStudentsForAttendance())}
