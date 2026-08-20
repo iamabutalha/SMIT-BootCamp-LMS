@@ -138,6 +138,13 @@ const deleteTask = asyncHandler(async (req, res) => {
 });
 
 const getStudentTaskHistory = asyncHandler(async (req, res) => {
+  const { viewType = "daily", date } = req.query;
+  const validViewTypes = ["daily", "weekly", "monthly"];
+
+  if (!validViewTypes.includes(viewType)) {
+    return res.status(400).json({ success: false, message: "Invalid history view" });
+  }
+
   const student = await Student.findById(req.params.studentId).select(
     "rollNumber name course batch team"
   );
@@ -146,7 +153,36 @@ const getStudentTaskHistory = asyncHandler(async (req, res) => {
     return res.status(404).json({ success: false, message: "Student not found" });
   }
 
-  const tasks = await Task.find({ student: student._id }).sort({ dueDate: -1 });
+  const selectedDate = date ? new Date(`${date}T00:00:00`) : new Date();
+  if (Number.isNaN(selectedDate.getTime())) {
+    return res.status(400).json({ success: false, message: "Invalid date" });
+  }
+
+  let periodStart;
+  let periodEnd;
+
+  if (viewType === "monthly") {
+    periodStart = new Date(selectedDate.getFullYear(), selectedDate.getMonth(), 1);
+    periodEnd = new Date(selectedDate.getFullYear(), selectedDate.getMonth() + 1, 1);
+  } else if (viewType === "weekly") {
+    const dayOfWeek = selectedDate.getDay();
+    const daysSinceMonday = (dayOfWeek + 6) % 7;
+    periodStart = new Date(selectedDate);
+    periodStart.setDate(selectedDate.getDate() - daysSinceMonday);
+    periodStart.setHours(0, 0, 0, 0);
+    periodEnd = new Date(periodStart);
+    periodEnd.setDate(periodEnd.getDate() + 7);
+  } else {
+    periodStart = new Date(selectedDate);
+    periodStart.setHours(0, 0, 0, 0);
+    periodEnd = new Date(periodStart);
+    periodEnd.setDate(periodEnd.getDate() + 1);
+  }
+
+  const tasks = await Task.find({
+    student: student._id,
+    dueDate: { $gte: periodStart, $lt: periodEnd },
+  }).sort({ dueDate: -1 });
 
   const summary = {
     totalTasks: tasks.length,

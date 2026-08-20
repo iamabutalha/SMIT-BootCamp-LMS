@@ -8,6 +8,7 @@ import Button from "../../../components/ui/Button";
 import LoadingState from "../../../components/common/LoadingState";
 import taskService from "../../../services/taskService";
 import { formatDMY } from "../../../utils/dateUtils";
+import { Calendar, User, Hash } from "lucide-react";
 
 const getStatusBadgeVariant = (status) => {
   switch (status) {
@@ -44,8 +45,14 @@ function StudentTaskHistoryModal({
     if (!student) return;
     setLoading(true);
     try {
+      const studentId =
+        (typeof student.studentId === "object"
+          ? student.studentId?._id || student.studentId?.id
+          : student.studentId) ||
+        student._id ||
+        student.id;
       const data = await taskService.getStudentHistory(
-        student.id || student.studentId,
+        studentId,
         viewType,
         selectedDate
       );

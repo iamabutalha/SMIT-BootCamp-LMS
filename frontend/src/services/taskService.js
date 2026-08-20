@@ -88,8 +88,10 @@ const taskService = {
   },
 
   // Get student task history
-  getStudentHistory: async (studentId) => {
-    const response = await apiClient.get(`/tasks/student/${studentId}/history`);
+  getStudentHistory: async (studentId, viewType, date) => {
+    const response = await apiClient.get(`/tasks/student/${studentId}/history`, {
+      params: { viewType, date },
+    });
     const historyData = response.data?.data || response.data;
     if (historyData && Array.isArray(historyData.tasks)) {
       historyData.tasks = historyData.tasks.map(cleanTask);
