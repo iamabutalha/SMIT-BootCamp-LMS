@@ -12,6 +12,8 @@ function DeleteTeamModal({
 }) {
   if (!team) return null;
 
+  const teamId = team._id || team.id;
+
   const footer = (
     <>
       <Button variant="outline" onClick={onClose} disabled={loading}>
@@ -20,7 +22,7 @@ function DeleteTeamModal({
       <Button
         variant="danger"
         loading={loading}
-        onClick={() => onConfirm(team.id)}
+        onClick={() => onConfirm(teamId)}
       >
         Delete Team
       </Button>
